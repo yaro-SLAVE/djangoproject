@@ -2,6 +2,11 @@ from rest_framework import serializers
 from tests_system.models import *
 from django.contrib.auth.models import User
 
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = "__all__"
+
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
@@ -24,6 +29,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     role_id = serializers.PrimaryKeyRelatedField(queryset = Role.objects.all(), source = 'role', write_only = True)
     user = UserSerializer(read_only = True)
     user_id = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), source = 'user', write_only = True)
+    image = ImageSerializer(read_only = True)
+    image_id = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(),  source = 'image', write_only = True)
 
     class Meta:
         model = Profile
@@ -71,8 +78,8 @@ class AnsweredTaskSerializer(serializers.ModelSerializer):
 class FinishedTestSerializer(serializers.ModelSerializer):
     test = TestSerializer(read_only = True)
     test_id = serializers.PrimaryKeyRelatedField(queryset = Test.objects.all(), source = 'test', write_only = True)
-    profile = ProfileSerializer(read_only = True)
-    profile_id = serializers.PrimaryKeyRelatedField(queryset = Profile.objects.all(), source = 'progile', write_only = True)
+    user = ProfileSerializer(read_only = True)
+    user_id = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), source = 'user', write_only = True)
 
     class Meta:
         model = FinishedTest
@@ -88,10 +95,20 @@ class FinishedTestAnsweredTaskSerializer(serializers.ModelSerializer):
         model = FinishedTestAnsweredTask
         fields = "__all__"
 
-class ImageSerializer(serializers.ModelSerializer):
-    topic_type = TopicTypeSerializer(read_only = True)
-    topic_type_id = serializers.PrimaryKeyRelatedField(queryset = TopicType.objects.all(), source = 'topic_type', write_only = True)
+class TaskImageSerializer(serializers.ModelSerializer):
+    task = TaskSerializer(read_only = True)
+    task_id = serializers.PrimaryKeyRelatedField(queryset = Task.objects.all(), source = 'task', write_only = True)
+    image = ImageSerializer(read_only = True)
+    image_id = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(),  source = 'image', write_only = True)
 
     class Meta:
         model = Image
+        fields = "__all__"
+
+class RefreshTokenSerializer(serializers.ModelSerializer):
+    user = ProfileSerializer(read_only = True)
+    user_id = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), source = 'user', write_only = True)
+
+    class Meta:
+        model = RefreshToken
         fields = "__all__"

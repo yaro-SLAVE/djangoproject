@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Image(models.Model):
+    image_name = models.TextField("Название")
+    image = models.ImageField("Изображение", upload_to="images")
+
 class Group(models.Model):
     group_name = models.TextField("Название группы")
 
@@ -19,6 +23,7 @@ class Profile(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
     total_scores = models.IntegerField("Общее количество баллов")
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
+    profile_logo = models.ForeignKey(Image, on_delete=models.CASCADE, null=True)
 
 class TopicType(models.Model):
     topic_type_name = models.TextField("Название темы")
@@ -44,7 +49,7 @@ class AnsweredTask(models.Model):
 
 class FinishedTest(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     time_of_passage = models.TimeField("Время выполнения")
     test_scores = models.IntegerField("Баллы за ответы")
     bonus_scores = models.IntegerField("Бонусные баллы")
@@ -54,7 +59,12 @@ class FinishedTestAnsweredTask(models.Model):
     finished_test = models.ForeignKey(FinishedTest, on_delete=models.CASCADE)
     answered_task = models.ForeignKey(AnsweredTask, on_delete=models.CASCADE)
 
-class Image(models.Model):
-    image_name = models.TextField("Название")
-    topic_type = models.ForeignKey(TopicType, on_delete=models.CASCADE)
-    image_path = models.TextField("Путь к файлу")
+class TaskImage(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+
+class RefreshToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    refresh = models.TextField("Refresh")
+    date_create = models.DateTimeField("Дата генерации")
+    is_valid = models.BooleanField("Валиден")

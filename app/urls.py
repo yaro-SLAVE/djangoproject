@@ -20,6 +20,9 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from tests_system.api import *
 from django.contrib.auth.models import User
+from tests_system import views
+
+from rest_framework_simplejwt import views as jwt_views
 
 
 router = DefaultRouter()
@@ -27,16 +30,21 @@ router.register("users", UserViewset, basename="users")
 router.register("profiles", ProfileViewset, basename="profiles")
 router.register("roles", RoleViewset, basename="roles")
 router.register("groups", GroupViewset, basename="groups")
-router.register("topictypes", TopicTypeViewset, basename="topictypes")
+router.register("topic_types", TopicTypeViewset, basename="topic_types")
 router.register("tasks", TaskViewset, basename="tasks")
 router.register("tests", TestViewset, basename="tests")
-router.register("answeredtasks", AnsweredTaskViewset, basename="answeredtasks")
-router.register("finishedtests", FinishedTestViewset, basename="finishedtests")
-router.register("finishedtestansweredtasks", FinishedTestAnsweredTaskViewset, basename="finishedtestansweredtasks")
-router.register("testtasks", TestTaskViewset, basename="testtasks")
+router.register("answered_tasks", AnsweredTaskViewset, basename="answered_tasks")
+router.register("finished_tests", FinishedTestViewset, basename="finished_tests")
+router.register("finished_test_answered_tasks", FinishedTestAnsweredTaskViewset, basename="finished_test_answered_tasks")
+router.register("test_tasks", TestTaskViewset, basename="test_tasks")
 router.register("images", ImageViewset, basename = "images")
+router.register("task_images", TaskImageViewset, basename = "task_images")
+router.register("refresh_tokens", RefreshTokenViewset, basename = "refresh_tokens")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/", include(router.urls))
+    path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path("api/", include(router.urls)),
+    path('api/auth/', views.AuthorizationAPIView.as_view(), name='authoriztion'),
 ]

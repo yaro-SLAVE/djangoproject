@@ -24,7 +24,7 @@ class UserViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 class ProfileViewset(
@@ -46,7 +46,7 @@ class ProfileViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 class RoleViewset(
@@ -68,7 +68,7 @@ class RoleViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 
@@ -91,7 +91,7 @@ class GroupViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 
@@ -114,7 +114,7 @@ class TopicTypeViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 class TaskViewset(
@@ -136,7 +136,7 @@ class TaskViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 class TestViewset(
@@ -158,7 +158,7 @@ class TestViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 class AnsweredTaskViewset(
@@ -180,7 +180,7 @@ class AnsweredTaskViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 class TestTaskViewset(
@@ -202,7 +202,7 @@ class TestTaskViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 class FinishedTestViewset(
@@ -224,7 +224,7 @@ class FinishedTestViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 class FinishedTestAnsweredTaskViewset(
@@ -246,7 +246,7 @@ class FinishedTestAnsweredTaskViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 class ImageViewset(
@@ -268,5 +268,49 @@ class ImageViewset(
     def delete(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
+    
+class TaskImageViewset(
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    queryset = TaskImage.objects.all()
+    serializer_class = TaskImageSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+    
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    
+class RefreshTokenViewset(
+        mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    queryset = RefreshToken.objects.all()
+    serializer_class = RefreshTokenSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+    
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs) 

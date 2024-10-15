@@ -1,4 +1,4 @@
-/app/settings.py
+/app/local_settings.py
 **/__pycache__/**
 **/node_modules/**
 
