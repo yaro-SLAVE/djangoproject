@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from tests_system.models import *
 from django.contrib.auth.models import User
 
@@ -23,14 +24,16 @@ class UserSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class ProfileSerializer(serializers.ModelSerializer):
-    group = GroupSerializer(read_only = True)
-    group_id = serializers.PrimaryKeyRelatedField(queryset = Group.objects.all(), source = 'group', write_only = True)
-    role = RoleSerializer(read_only = True)
-    role_id = serializers.PrimaryKeyRelatedField(queryset = Role.objects.all(), source = 'role', write_only = True)
-    user = UserSerializer(read_only = True)
-    user_id = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), source = 'user', write_only = True)
-    image = ImageSerializer(read_only = True)
-    image_id = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(),  source = 'image', write_only = True)
+    group = serializers.PrimaryKeyRelatedField(queryset = Group.objects.all(), read_only = False)
+    role = serializers.PrimaryKeyRelatedField(queryset = Role.objects.all(), read_only = False)
+    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False)
+    image = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(), read_only = False)
+
+    def create(self, validated_data):
+        if 'request' in self.context:
+            validated_data['user'] = self.context['request'].user.id
+
+            return super().create(validated_data)
 
     class Meta:
         model = Profile
@@ -42,73 +45,80 @@ class TopicTypeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class TaskSerializer(serializers.ModelSerializer):
-    topic_type = TopicTypeSerializer(read_only = True)
-    topic_type_id = serializers.PrimaryKeyRelatedField(queryset = TopicType.objects.all(), source = 'topic_type', write_only = True)
+    topic_type = serializers.PrimaryKeyRelatedField(queryset = TopicType.objects.all(), read_only = False)
+    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False)
+
+    def create(self, validated_data):
+        if 'request' in self.context:
+            validated_data['user'] = self.context['request'].user.id
+
+            return super().create(validated_data)
 
     class Meta:
         model = Task
         fields = "__all__"
 
 class TestSerializer(serializers.ModelSerializer):
-    topic_type = TopicTypeSerializer(read_only = True)
-    topic_type_id = serializers.PrimaryKeyRelatedField(queryset = TopicType.objects.all(), source = 'topic_type', write_only = True)
+    topic_type = serializers.PrimaryKeyRelatedField(queryset = TopicType.objects.all(), read_only = False)
 
     class Meta:
         model = Test
         fields = "__all__"
 
 class TestTaskSerializer(serializers.ModelSerializer):
-    task = TaskSerializer(read_only = True)
-    task_id = serializers.PrimaryKeyRelatedField(queryset = Task.objects.all(), source = 'task', write_only = True)
-    test = TestSerializer(read_only = True)
-    test_id = serializers.PrimaryKeyRelatedField(queryset = Test.objects.all(), source = 'test', write_only = True)
+    task = serializers.PrimaryKeyRelatedField(queryset = Task.objects.all(), read_only = False)
+    test = serializers.PrimaryKeyRelatedField(queryset = Test.objects.all(), read_only = False)
 
     class Meta:
         model = TestTask
         fields = "__all__"
 
 class AnsweredTaskSerializer(serializers.ModelSerializer):
-    task = TaskSerializer(read_only = True)
-    task_id = serializers.PrimaryKeyRelatedField(queryset = Task.objects.all(), source = 'task', write_only = True)
+    task = serializers.PrimaryKeyRelatedField(queryset = Task.objects.all(), read_only = False)
 
     class Meta:
         model = AnsweredTask
         fields = "__all__"
 
 class FinishedTestSerializer(serializers.ModelSerializer):
-    test = TestSerializer(read_only = True)
-    test_id = serializers.PrimaryKeyRelatedField(queryset = Test.objects.all(), source = 'test', write_only = True)
-    user = ProfileSerializer(read_only = True)
-    user_id = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), source = 'user', write_only = True)
+    test = serializers.PrimaryKeyRelatedField(queryset = Test.objects.all(), read_only = False)
+    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False)
+
+    def create(self, validated_data):
+        if 'request' in self.context:
+            validated_data['user'] = self.context['request'].user.id
+
+            return super().create(validated_data)
 
     class Meta:
         model = FinishedTest
         fields = "__all__"
 
 class FinishedTestAnsweredTaskSerializer(serializers.ModelSerializer):
-    finished_test = FinishedTestSerializer(read_only = True)
-    finished_test_id = serializers.PrimaryKeyRelatedField(queryset = FinishedTest.objects.all(), source = 'finished_test', write_only = True)
-    answered_task = AnsweredTaskSerializer(read_only = True)
-    answered_task_id = serializers.PrimaryKeyRelatedField(queryset = AnsweredTask.objects.all(), source = 'answered_task', write_only = True)
+    finished_test = serializers.PrimaryKeyRelatedField(queryset = FinishedTest.objects.all(), read_only = False)
+    answered_task = serializers.PrimaryKeyRelatedField(queryset = AnsweredTask.objects.all(), read_only = False)
 
     class Meta:
         model = FinishedTestAnsweredTask
         fields = "__all__"
 
 class TaskImageSerializer(serializers.ModelSerializer):
-    task = TaskSerializer(read_only = True)
-    task_id = serializers.PrimaryKeyRelatedField(queryset = Task.objects.all(), source = 'task', write_only = True)
-    image = ImageSerializer(read_only = True)
-    image_id = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(),  source = 'image', write_only = True)
+    task = serializers.PrimaryKeyRelatedField(queryset = Task.objects.all(), read_only = False)
+    image = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(), read_only = False)
 
     class Meta:
         model = Image
         fields = "__all__"
 
 class RefreshTokenSerializer(serializers.ModelSerializer):
-    user = ProfileSerializer(read_only = True)
-    user_id = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), source = 'user', write_only = True)
+    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False)
+
+    def create(self, validated_data):
+        if 'request' in self.context:
+            validated_data['user'] = self.context['request'].user.id
+
+            return super().create(validated_data)
 
     class Meta:
         model = RefreshToken
-        fields = "__all__"
+        fields = "__all__"    

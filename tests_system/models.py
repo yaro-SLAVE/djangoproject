@@ -19,7 +19,6 @@ class Role(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_name = models.TextField("ФИО")
     group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
     total_scores = models.IntegerField("Общее количество баллов")
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
@@ -34,6 +33,7 @@ class TopicType(models.Model):
 class Task(models.Model):
     topic_type = models.ForeignKey(TopicType, on_delete=models.CASCADE)
     task_body = models.JSONField("Тело теста")
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 class Test(models.Model):
     topic_type = models.ForeignKey(TopicType, on_delete=models.CASCADE)

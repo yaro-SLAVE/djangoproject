@@ -43,8 +43,7 @@ router.register("refresh_tokens", RefreshTokenViewset, basename = "refresh_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path("api/", include(router.urls)),
-    path('api/auth/', views.AuthorizationAPIView.as_view(), name='authoriztion'),
 ]

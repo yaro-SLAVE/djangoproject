@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ["id", "user", "profile_name", "group", "role", "total_scores"]
+    list_display = ["id", "user", "group", "role", "total_scores"]
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):

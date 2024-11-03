@@ -1,9 +1,23 @@
+from rest_framework.decorators import action
+
 from rest_framework.viewsets import GenericViewSet
 from rest_framework import mixins, viewsets
+
+from rest_framework.permissions import BasePermission 
 
 from tests_system.models import *
 from tests_system.serializers import *
 from django.contrib.auth.models import User
+
+from django.db.models import Avg, Min, Max, Count
+
+from rest_framework.response import Response
+
+from django.contrib.auth import authenticate, login
+from rest_framework.permissions import IsAuthenticated
+import pyotp
+
+from django.core.cache import cache
 
 class UserViewset(
     mixins.CreateModelMixin,
@@ -15,18 +29,6 @@ class UserViewset(
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-    
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
-
 class ProfileViewset(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
@@ -36,18 +38,30 @@ class ProfileViewset(
 ):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if not self.request.user.is_superuser:
+            qs = qs.filter(user = self.request.user.id)
+        return qs
     
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = Profile.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 class RoleViewset(
     mixins.CreateModelMixin,
@@ -58,18 +72,24 @@ class RoleViewset(
 ):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = Role.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 
 class GroupViewset(
@@ -81,18 +101,24 @@ class GroupViewset(
 ):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = Group.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 
 class TopicTypeViewset(
@@ -104,18 +130,24 @@ class TopicTypeViewset(
 ):
     queryset = TopicType.objects.all()
     serializer_class = TopicTypeSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = TopicType.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 class TaskViewset(
     mixins.CreateModelMixin,
@@ -127,17 +159,28 @@ class TaskViewset(
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.filter(user = self.request.user.id)
+        return qs
+    
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
 
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-    
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = Task.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 class TestViewset(
     mixins.CreateModelMixin,
@@ -148,18 +191,24 @@ class TestViewset(
 ):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = Test.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 class AnsweredTaskViewset(
     mixins.CreateModelMixin,
@@ -170,18 +219,24 @@ class AnsweredTaskViewset(
 ):
     queryset = AnsweredTask.objects.all()
     serializer_class = AnsweredTaskSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = AnsweredTask.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 class TestTaskViewset(
     mixins.CreateModelMixin,
@@ -192,18 +247,24 @@ class TestTaskViewset(
 ):
     queryset = TestTask.objects.all()
     serializer_class = TestTaskSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = TestTask.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 class FinishedTestViewset(
     mixins.CreateModelMixin,
@@ -214,18 +275,24 @@ class FinishedTestViewset(
 ):
     queryset = FinishedTest.objects.all()
     serializer_class = FinishedTestSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = FinishedTest.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 class FinishedTestAnsweredTaskViewset(
     mixins.CreateModelMixin,
@@ -236,18 +303,24 @@ class FinishedTestAnsweredTaskViewset(
 ):
     queryset = FinishedTestAnsweredTask.objects.all()
     serializer_class = FinishedTestAnsweredTaskSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = FinishedTestAnsweredTask.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
 
 class ImageViewset(
     mixins.CreateModelMixin,
@@ -258,18 +331,24 @@ class ImageViewset(
 ):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = Image.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
     
 class TaskImageViewset(
     mixins.CreateModelMixin,
@@ -280,18 +359,6 @@ class TaskImageViewset(
 ):
     queryset = TaskImage.objects.all()
     serializer_class = TaskImageSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-    
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
     
 class RefreshTokenViewset(
         mixins.CreateModelMixin,
@@ -302,15 +369,3 @@ class RefreshTokenViewset(
 ):
     queryset = RefreshToken.objects.all()
     serializer_class = RefreshTokenSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-    
-    def delete(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs) 

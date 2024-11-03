@@ -3,33 +3,39 @@
     import axios from "axios";
     import Cookies from 'js-cookie';
 
+    interface User {
+        username: string;
+    }
+
+    interface Role {
+        role: string;
+    }
+
+    interface Group {
+        group: string;
+    }
+
+    interface Profile {
+        user: User;
+        role: Role;
+        group: Group;
+        total_scores: number;
+    }
+
     onBeforeMount(async () => {
         axios.defaults.headers.common['X-CSRFToken'] = Cookies.get("csrftoken");
         await fetchData();
     })
 
     async function fetchData() {
-        const r = await axios.get("/api/users/");
-        const d = await axios.get("/api/roles/");
-        const g = await axios.get("/api/groups/");
         const p = await axios.get("/api/profiles/");
-        profiles.value = p.data;
-        users.value = r.data;
-        roles.value = d.data;   
-        groups.value = g.data;
+        console.log(p.data)
     }
 
     const groups = ref([]);
-    const profiles = ref([]);
     const profileToAdd = ref({});
     const roles = ref({});
     const users = ref({});
-
-    async function onLoadClick() {
-        const r = await axios.get("/api/profiles/");
-        console.log(r.data);
-        profiles.value = r.data;
-    }
 
     async function onProfileAdd() {
         await axios.post("/api/profiles/", {
@@ -40,72 +46,26 @@
 </script>
 
 <template>
-    <div>
-        <div v-for="item in profiles">
-            <b>{{ item.user.username }}</b>
-        </div>
-
-        <button @click="onLoadClick">Загрузить</button>
-    </div>
-
-    <form @submit.prevent.stop="onProfileAdd">
-        <div class="row">
-            <div class="col">
-                <div class="form-floating">
-                    <!-- ТУТ ПОДКЛЮЧИЛ studentToAdd.name -->
-                    <input
-                    type="text"
-                    class="form-control"
-                    v-model="profileToAdd.profile_name"
-                    required
-                    />
-                    <label for="floatingInput">Фио</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <!-- А ТУТ ПОДКЛЮЧИЛ К select -->
-                <div class="form-floating">
-                    <select class="form-select" v-model="profileToAdd.group_id" required>
-                        <option :value="g.id" v-for="g in groups">{{ g.group_name }}</option>
-                    </select>
-                    <label for="floatingInput">Группа</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="form-floating">
-                    <select class="form-select" v-model="profileToAdd.role_id" required>
-                        <option :value="g.id" v-for="g in roles">{{ g.role }}</option>
-                    </select>
-                    <label for="floatingInput">Роль</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="form-floating">
-                    <select class="form-select" v-model="profileToAdd.user_id" required>
-                        <option :value="g.id" v-for="g in users">{{ g.username }}</option>
-                    </select>
-                    <label for="floatingInput">User</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="form-floating">
-                    <!-- ТУТ ПОДКЛЮЧИЛ studentToAdd.name -->
-                    <input
-                    type="number"
-                    class="form-control"
-                    v-model="profileToAdd.total_scores"
-                    required
-                    />
-                    <label for="floatingInput">баллы</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-primary">
-                    Добавить
-                </button>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">Navbar</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Профиль
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="/admin">Админка</a></li>
+                    </ul>
+                </li>
+            </ul>
             </div>
         </div>
-    </form>
+    </nav>
 </template>
 
 <style scoped>
