@@ -137,10 +137,6 @@ SIMPLE_JWT = {
 
     'REFRESH_TOKEN_LIFETIME': timedelta(days=60),
 
-    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSerializer",
-
-    "TOKEN_REFRSH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
-
 }
 
 MEDIA_ROOT = BASE_DIR / "media"

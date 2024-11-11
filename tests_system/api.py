@@ -29,6 +29,23 @@ class UserViewset(
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+    @action(url_path="info", methods=["GET"], detail = False)
+    def get_info(self, request, *args, **kwargs):
+        user = self.request.user
+        user_info = {
+            "is_authenticated": user.is_authenticated,
+            "is_superuser": False,
+            "username": ""
+        }
+
+        if user.is_authenticated:
+            user_info.update({
+                "is_superuser": user.is_superuser,
+                "username": user.username
+            })
+
+        return Response(user_info)
+
 class ProfileViewset(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
@@ -62,6 +79,60 @@ class ProfileViewset(
 
         serializer = self.StatsSerializer(isinstance = stats)
         return Response(serializer.data)
+    
+    permission_classes = [IsAuthenticated]
+
+    class OTPSerializer(serializers.Serializer):
+        key = serializers.CharField()
+
+    class OTPRequired(BasePermission):
+        def has_permission(self, request, view):
+            return bool(request.user and cache.get('otp_good', False))
+        
+    @action(detail=False, url_path="check-login", methods=['GET'], permission_classes=[])
+    def get_check_login(self, request, *args, **kwargs):
+        return Response({
+            'is_authenticated': self.request.user.is_authenticated
+        })
+    
+    @action(detail=False, url_path="login", methods=['GET'], permission_classes=[])
+    def use_login(self, request, *args, **kwargs):
+        user= authenticate(username='username', password='pass')
+        if user:
+            login(request, user)
+        return Response({
+            'is_authenticated': bool(user)
+        })
+
+    @action(detail=False, url_path='otp-login', methods=['POST'], serializer_class=OTPSerializer)
+    def otp_login(self, *args, **kwargs):
+        totp = pyotp.TOTP(self.request.user.userprofile.opt_key)
+        
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+
+        success = False
+        if totp.now() == serializer.validated_data['key']:
+            cache.set('otp_good', True, 10)
+            success = True
+
+        return Response({
+            'success': success
+        })
+    
+    @action(detail=False, url_path='otp-status')
+    def get_otp_status(self, *args, **kwargs):
+        otp_good = cache.get('otp_good', False)
+        return Response({
+            'otp_good': otp_good
+        })
+    
+    @action(detail=False, url_path='otp-required', permission_classes=[OTPRequired])
+    def page_with_otp_required(self, *args, **kwargs):
+        return Response({
+            'success': True
+        })
+
 
 class RoleViewset(
     mixins.CreateModelMixin,

@@ -39,7 +39,6 @@ router.register("finished_test_answered_tasks", FinishedTestAnsweredTaskViewset,
 router.register("test_tasks", TestTaskViewset, basename="test_tasks")
 router.register("images", ImageViewset, basename = "images")
 router.register("task_images", TaskImageViewset, basename = "task_images")
-router.register("refresh_tokens", RefreshTokenViewset, basename = "refresh_tokens")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
