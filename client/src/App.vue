@@ -6,7 +6,7 @@
     import { faBookmark }  from '@fortawesome/free-regular-svg-icons'
     import { storeToRefs } from 'pinia';
     import useUserProfileStore from './stores/userProfileStore';
-    import router from './router/index'
+    import router from "./router/index"
 
     interface Role {
         role: string;
@@ -36,12 +36,6 @@
         await fetchData();
     })
 
-    onMounted(() => {
-        if ((!is_auth.value && (router.currentRoute.value.path !== '/login')) || (!is_auth.value && (router.currentRoute.value.path !== '/registration'))) {
-            router.push('/login');
-        }
-    })
-
     async function fetchData() {
 
     }
@@ -60,7 +54,7 @@
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav v-if="router.currentRoute.value.name !== 'Login' && router.currentRoute.value.name !== 'Registration'" class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
           <a class="navbar-brand" href="/">
             <FontAwesomeIcon :icon="faBookmark" />
@@ -96,7 +90,9 @@
         </div>
     </nav>
 
-    <router-view/>
+    <main class="container my-5 d-flex justify-content-center">
+        <router-view/>
+    </main>
 </template>
 
 <style scoped>
