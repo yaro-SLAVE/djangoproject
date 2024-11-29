@@ -3,6 +3,11 @@ from rest_framework import serializers
 from tests_system.models import *
 from django.contrib.auth.models import User
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"
+
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
@@ -16,11 +21,6 @@ class GroupSerializer(serializers.ModelSerializer):
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = "__all__"
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
         fields = "__all__"
 
 class ProfileSerializer(serializers.ModelSerializer):

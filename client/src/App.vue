@@ -7,27 +7,13 @@
     import { storeToRefs } from 'pinia';
     import useUserProfileStore from './stores/userProfileStore';
     import router from "./router/index"
-
-    interface Role {
-        role: string;
-    }
-
-    interface Group {
-        group: string;
-    }
-
-    interface Profile {
-        role: Role;
-        group: Group;
-        total_scores: number;
-    }
+    import type { User } from "@/CustomTypes"
 
     const userProfileStore = useUserProfileStore();
 
     const {
-        is_auth,
-        is_superuser,
-        username
+        userProf,
+        jwt
     } = storeToRefs(userProfileStore);
 
     onBeforeMount(async () => {

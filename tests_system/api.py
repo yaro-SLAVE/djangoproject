@@ -29,23 +29,6 @@ class UserViewset(
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @action(url_path="info", methods=["GET"], detail = False)
-    def get_info(self, request, *args, **kwargs):
-        user = self.request.user
-        user_info = {
-            "is_authenticated": user.is_authenticated,
-            "is_superuser": False,
-            "username": ""
-        }
-
-        if user.is_authenticated:
-            user_info.update({
-                "is_superuser": user.is_superuser,
-                "username": user.username
-            })
-
-        return Response(user_info)
-
 class ProfileViewset(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
@@ -61,6 +44,19 @@ class ProfileViewset(
         if not self.request.user.is_superuser:
             qs = qs.filter(user = self.request.user.id)
         return qs
+    
+    @action(url_path="info", methods=["GET"], detail = False)
+    def get_info(self, request, *args, **kwargs):
+        user = request.user
+        profile = Profile.objects.filter(user = user.id).first()
+        user_info = {
+            "is_authenticated": user.is_authenticated,
+            "is_superuser": user.is_superuser,
+            "username": user.username,
+            "role": profile.total_scores
+        }
+
+        return Response(user_info)
     
     class StatsSerializer(serializers.Serializer):
         count = serializers.IntegerField()

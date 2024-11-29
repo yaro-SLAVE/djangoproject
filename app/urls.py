@@ -42,7 +42,7 @@ router.register("task_images", TaskImageViewset, basename = "task_images")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/', jwt_views.TokenObtainPairView.as_view()),
+    path('api/auth/refresh/', jwt_views.TokenRefreshView.as_view()),
     path("api/", include(router.urls)),
 ]
