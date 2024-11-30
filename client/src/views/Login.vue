@@ -6,6 +6,7 @@ import { faGithub, faGooglePay, faGoogle, faYandex, faVk } from '@fortawesome/fr
 import axios from 'axios';
 import useUserProfileStore from '@/stores/userProfileStore';
 import { storeToRefs } from 'pinia';
+import router from "@/router";
 
 const username = ref("");
 const password = ref("");
@@ -13,6 +14,9 @@ const store = useUserProfileStore();
 
 async function authenticate() {
   const auth = await store.login(username.value, password.value);
+  if (auth) {
+    router.push('/')
+  }
 }
 
 </script>

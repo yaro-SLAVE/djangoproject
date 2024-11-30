@@ -8,7 +8,7 @@ import Registry from '../views/Registry.vue'
 import useUserProfileStore from '@/stores/userProfileStore'
 import { storeToRefs } from 'pinia';
 import { toValue, type RefSymbol } from '@vue/reactivity'
-import type { User } from "@/CustomTypes"
+import type { User } from "@/customTypes"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,26 +20,18 @@ const router = createRouter({
     { path: '/login', component: Login, name: 'Login' },
     { path: '/registration', component: Registry, name: 'Registration' },
   ]
-})
-
+});
 
 router.beforeEach((to, from, next) => {
-  const { userProf } = storeToRefs(useUserProfileStore());
+  const { is_auth } = storeToRefs(useUserProfileStore());
 
-  if (!userProf.value?.is_authenticated && to.name !== 'Login' && to.name !== 'Registration') {
-    next({ name: "Login" })
+  if (!is_auth.value && to.name !== 'Login' && to.name !== 'Registration') {
+    next({ name: 'Login' });
+  } else if (is_auth.value && (to.name === 'Login' || to.name === 'Registration')) {
+    next({ name: 'Profile' });
   } else {
-    next()
+    next();
   }
-
-  if (userProf.value?.is_authenticated && (to.name == 'Login' || to.name == 'Registration')) {
-    next({ name: "Profile" })
-  } else {
-    next()
-  }
-
-  console.log(userProf)
 })
 
-
-export default router
+export default router;

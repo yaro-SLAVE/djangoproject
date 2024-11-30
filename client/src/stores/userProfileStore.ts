@@ -4,7 +4,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useLocalStorage } from "@vueuse/core";
 import type { RefSymbol } from "@vue/reactivity";
-import type { User} from "@/CustomTypes"
+import type { User} from "@/customTypes"
 
 const useUserProfileStore = defineStore("UserProfileStore", () => {
     type Tokens = {
@@ -18,6 +18,8 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
 
     const jwt = useLocalStorage<Token>("jwt", undefined);
     const refresh = useLocalStorage<Token>("refresh", undefined);
+
+    const is_auth = useLocalStorage<boolean>("authorization", false);
 
     function isTokenValid(token: Token): boolean {
         if (jwt === undefined) {
@@ -84,17 +86,17 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     async function getUserInfo() {
         if (await updateTokens()) {
             try {
-                userProf.value = (await axios.get("/api/profiles/info", {
+                userProf.value = (await axios.get<User>("/api/profiles/info", {
                     headers: {
                         Authorization: `Bearer ${jwt.value}`
                     },
                 })).data;
 
-                console.log(userProf.value?.is_authenticated)
+                is_auth.value = userProf.value.is_authenticated; 
+                console.log(is_auth.value);  
             } catch(error) {
                 console.error("Ошибка при получении инфы о пользователе", error);
             }
-            console.log(userProf.value?.is_authenticated)
         }
     }
 
@@ -102,7 +104,7 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
         await getUserInfo();
     });
 
-    return {userProf, jwt, login};
+    return {userProf, jwt, is_auth, login};
 });
 
 export default useUserProfileStore;
