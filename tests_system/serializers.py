@@ -109,16 +109,3 @@ class TaskImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = "__all__"
-
-class RefreshTokenSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False)
-
-    def create(self, validated_data):
-        if 'request' in self.context:
-            validated_data['user'] = self.context['request'].user.id
-
-            return super().create(validated_data)
-
-    class Meta:
-        model = RefreshToken
-        fields = "__all__"    

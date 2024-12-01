@@ -22,10 +22,10 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     const is_auth = useLocalStorage<boolean>("authorization", false);
 
     function isTokenValid(token: Token): boolean {
-        if (jwt === undefined) {
+        if (token === undefined) {
             return false;
         } else {
-            const decoded = jwtDecode(token);
+            const decoded = jwtDecode(String(token));
             return Date.now() < decoded.exp! * 1000;
         }
     }
@@ -74,7 +74,7 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     async function refreshTokens() {
         const simpleAxios = axios.create();
         const newTokens: Tokens = (
-        await simpleAxios.post("/api/auth/refresh", {
+        await simpleAxios.post("/api/auth/refresh/", {
                 refresh: refresh.value,
             })
         ).data;
@@ -86,14 +86,13 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     async function getUserInfo() {
         if (await updateTokens()) {
             try {
-                userProf.value = (await axios.get<User>("/api/profiles/info", {
+                userProf.value = (await axios.get<User>("/api/profiles/info/", {
                     headers: {
                         Authorization: `Bearer ${jwt.value}`
                     },
                 })).data;
 
-                is_auth.value = userProf.value.is_authenticated; 
-                console.log(is_auth.value);  
+                is_auth.value = userProf.value.is_authenticated;
             } catch(error) {
                 console.error("Ошибка при получении инфы о пользователе", error);
             }

@@ -373,13 +373,3 @@ class TaskImageViewset(
 ):
     queryset = TaskImage.objects.all()
     serializer_class = TaskImageSerializer
-    
-class RefreshTokenViewset(
-        mixins.CreateModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet
-):
-    queryset = RefreshToken.objects.all()
-    serializer_class = RefreshTokenSerializer

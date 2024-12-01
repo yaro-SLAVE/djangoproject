@@ -7,40 +7,37 @@
     import { storeToRefs } from 'pinia';
     import useUserProfileStore from './stores/userProfileStore';
     import router from "./router/index"
-    import type { User } from "@/CustomTypes"
+    import type { User } from "@/customTypes"
 
     const userProfileStore = useUserProfileStore();
 
     const {
-        userProf,
-        jwt
+        userProf
     } = storeToRefs(userProfileStore);
+
+    const isNotLoginPage = computed({
+        get() {
+            return router.currentRoute.value.name !== 'Login' && router.currentRoute.value.name !== 'Registration';
+        },
+
+        set() {}
+    });
+
+    const currentPage = computed(() => ({
+        // TODO
+    }))
+
+    async function logout() {
+
+    }
 
     onBeforeMount(async () => {
         axios.defaults.headers.common['X-CSRFToken'] = Cookies.get("csrftoken");
-
-        await fetchData();
-    })
-
-    async function fetchData() {
-
-    }
-
-    const groups = ref([]);
-    const profileToAdd = ref({});
-    const roles = ref({});
-    const users = ref({});
-
-    async function onProfileAdd() {
-        await axios.post("/api/profiles/", {
-            ...profileToAdd.value,
-        });
-        await fetchData();
-    }
+    });
 </script>
 
 <template>
-    <nav v-if="router.currentRoute.value.name !== 'Login' && router.currentRoute.value.name !== 'Registration'" class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav v-if="isNotLoginPage" class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
           <a class="navbar-brand" href="/">
             <FontAwesomeIcon :icon="faBookmark" />
@@ -62,13 +59,20 @@
                     </a>
                 </li>
 
-                <li class="nav-item dropdown ml-auto justify-content-end">
+                <li class="nav-item">
+                    <a class="nav-link" href="/raiting">
+                        Рейтинг
+                    </a>
+                </li>
+
+                <li class="nav-item dropdown mr-auto">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Профиль
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="/profile">Мой Профиль</a></li>
                         <li><a class="dropdown-item" href="/admin">Админка</a></li>
+                        <li><button @submit.prevent.stop="logout" class="dropdown-item">Выйти</button></li>
                     </ul>
                 </li>
             </ul>
@@ -76,7 +80,7 @@
         </div>
     </nav>
 
-    <main class="container my-5 d-flex justify-content-center">
+    <main class="container d-flex justify-content-center">
         <router-view/>
     </main>
 </template>

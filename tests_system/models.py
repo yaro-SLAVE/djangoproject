@@ -62,9 +62,3 @@ class FinishedTestAnsweredTask(models.Model):
 class TaskImage(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
-
-class RefreshToken(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    refresh = models.TextField("Refresh")
-    date_create = models.DateTimeField("Дата генерации")
-    is_valid = models.BooleanField("Валиден")
