@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
   import axios from 'axios';
   import { onBeforeMount, ref } from 'vue';
 
-  const roles = ref({});
+  const roles = ref();
 
   const username = ref("");
   const password = ref("");
@@ -22,7 +22,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
   });
 
   async function fetchRoles() {
-    roles.value = (await axios.get("/api/roles")).data;
+    roles.value = (await axios.get("/api/role")).data;
+    
   }
 
   async function onUserToAdd() {
@@ -71,7 +72,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
       <label for="floatingInput">Ваша роль</label>
     </div>
   
-    <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block my-4">Sign up</button>
+    <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block my-4">Sign up</button>
 
     <div class="text-center">
       <p>Have an account? <a href="/login">Sign in</a></p>

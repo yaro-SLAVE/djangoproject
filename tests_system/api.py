@@ -163,6 +163,34 @@ class TopicTypeViewset(
         serializer = self.StatsSerializer(isinstance = stats)
         return Response(serializer.data)
 
+class TaskAnswersTypeViewset(
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    queryset = TaskAnswersType.objects.all()
+    serializer_class = TaskAnswersTypeSerializer
+
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+
+    @action(detail = False, methods = ["GET"], url_path = "stats")
+    def get_stats(self, request, *args, **kwargs):
+        stats = TaskAnswersType.objects.aggregate(
+            count = Count("*"),
+            avg = Avg("id"),
+            min = Min("id"),
+            max = Max("id")
+        )
+
+        serializer = self.StatsSerializer(isinstance = stats)
+        return Response(serializer.data)
+
 class TaskViewset(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,

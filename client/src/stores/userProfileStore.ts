@@ -5,6 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import { useLocalStorage } from "@vueuse/core";
 import type { RefSymbol } from "@vue/reactivity";
 import type { User} from "@/customTypes"
+import router from "@/router";
 
 const useUserProfileStore = defineStore("UserProfileStore", () => {
     type Tokens = {
@@ -33,7 +34,7 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     async function login(username: string, password: string): Promise<boolean> {      
         try {
             const result = (
-                await axios.post<Tokens>("/api/auth/", {
+                await axios.post<Tokens>("/api/auth/login/", {
                     username: username,
                     password: password,
                 })
@@ -55,7 +56,22 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     }
 
     async function logout() {
+        const refreshCopy = refresh.value;
+        refresh.value = undefined;
+        jwt.value = undefined;
+        userProf.value = undefined;
+        is_auth.value = false;
 
+        await axios.post("/api/auth/logout/", {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            },
+            refresh: refreshCopy,
+        });
+
+        await axios.post("/admin/logout/")
+
+        router.push('/login');
     }
 
     async function updateTokens(): Promise<boolean> {
@@ -63,6 +79,7 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
             refresh.value = undefined;
             jwt.value = undefined;
             userProf.value = undefined;
+            is_auth.value = false;
             return false;
         } else if (!isTokenValid(jwt.value)) {
             await refreshTokens();
@@ -86,7 +103,7 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     async function getUserInfo() {
         if (await updateTokens()) {
             try {
-                userProf.value = (await axios.get<User>("/api/profiles/info/", {
+                userProf.value = (await axios.get<User>("/api/profile/info/", {
                     headers: {
                         Authorization: `Bearer ${jwt.value}`
                     },
@@ -103,7 +120,7 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
         await getUserInfo();
     });
 
-    return {userProf, jwt, is_auth, login};
+    return {userProf, jwt, is_auth, login, logout};
 });
 
 export default useUserProfileStore;

@@ -28,7 +28,7 @@
     }))
 
     async function logout() {
-
+        await userProfileStore.logout();
     }
 
     onBeforeMount(async () => {
@@ -72,7 +72,7 @@
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="/profile">Мой Профиль</a></li>
                         <li><a class="dropdown-item" href="/admin">Админка</a></li>
-                        <li><button @submit.prevent.stop="logout" class="dropdown-item">Выйти</button></li>
+                        <li><button @click="logout" class="dropdown-item">Выйти</button></li>
                     </ul>
                 </li>
             </ul>
@@ -80,7 +80,7 @@
         </div>
     </nav>
 
-    <main class="container d-flex justify-content-center">
+    <main class="container d-flex flex-column justify-content-center align-items-center">
         <router-view/>
     </main>
 </template>

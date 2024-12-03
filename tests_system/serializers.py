@@ -44,8 +44,14 @@ class TopicTypeSerializer(serializers.ModelSerializer):
         model = TopicType
         fields = "__all__"
 
+class TaskAnswersTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskAnswersType
+        fields = "__all__"
+
 class TaskSerializer(serializers.ModelSerializer):
     topic_type = serializers.PrimaryKeyRelatedField(queryset = TopicType.objects.all(), read_only = False)
+    task_answers_type = serializers.PrimaryKeyRelatedField(queryset = TaskAnswersType.objects.all(), read_only = False)
     user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False)
 
     def create(self, validated_data):

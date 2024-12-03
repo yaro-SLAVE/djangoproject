@@ -26,16 +26,28 @@ class Profile(models.Model):
 
 class TopicType(models.Model):
     topic_type_name = models.TextField("Название темы")
+    description = models.TextField("Описание роли")
 
     def __str__(self) -> str:
         return self.topic_type_name
+    
+class TaskAnswersType(models.Model):
+    type_name = models.TextField("Тип ответов")
+    description = models.TextField("Описание типа")
+
+    def __str__(self) -> str:
+        return self.type_name
 
 class Task(models.Model):
+    task_statement = models.TextField("Условие задания")
     topic_type = models.ForeignKey(TopicType, on_delete=models.CASCADE)
+    answers_type = models.ForeignKey(TaskAnswersType, on_delete=models.CASCADE)
     task_body = models.JSONField("Тело теста")
+    correct_answer = models.IntegerField("Верный ответ")
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 class Test(models.Model):
+    name = models.TextField("Название теста")
     topic_type = models.ForeignKey(TopicType, on_delete=models.CASCADE)
 
 class TestTask(models.Model):
@@ -45,7 +57,6 @@ class TestTask(models.Model):
 class AnsweredTask(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     selected_answer = models.IntegerField("Выбранный ответ")
-    correct_answer = models.IntegerField("Верный ответ")
 
 class FinishedTest(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
