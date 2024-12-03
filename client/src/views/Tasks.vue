@@ -178,13 +178,13 @@ import axios from 'axios';
                             <div class="row">
                                 <div class="col-6">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerA" checked>
+                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerA" v-model="correctAnswer" :value="0" checked>
                                         <label class="form-check-label" for="answerA">
                                             a
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerB">
+                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerB" v-model="correctAnswer" :value="1">
                                         <label class="form-check-label" for="answerB">
                                             b
                                         </label>
@@ -193,13 +193,13 @@ import axios from 'axios';
 
                                 <div class="col-6">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerC">
+                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerC" v-model="correctAnswer" :value="2">
                                         <label class="form-check-label" for="answerC">
                                             c
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerD">
+                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerD" v-model="correctAnswer" :value="3">
                                         <label class="form-check-label" for="answerD">
                                             d
                                         </label>

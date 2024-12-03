@@ -66,11 +66,13 @@
                 </li>
 
                 <li class="nav-item dropdown mr-auto">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Профиль
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img v-if="userProf?.logo === undefined" src="../public/default_profile.jpg" class="img-fluid" style="width: 25px; height: 25px; overflow: hiden;">
+                        <img v-if="userProf?.logo !== undefined" :src='userProf?.logo' class="img-fluid" style="width: 25px; height: 25px; overflow: hiden;">
+                        <label>{{userProf?.username}}</label>
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="/profile">Мой Профиль</a></li>
+                        <li><a class="dropdown-item" href="/profile">Профиль</a></li>
                         <li><a class="dropdown-item" href="/admin">Админка</a></li>
                         <li><button @click="logout" class="dropdown-item">Выйти</button></li>
                     </ul>

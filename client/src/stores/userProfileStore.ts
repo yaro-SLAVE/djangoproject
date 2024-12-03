@@ -76,10 +76,8 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
 
     async function updateTokens(): Promise<boolean> {
         if (!isTokenValid(refresh.value)) {
-            refresh.value = undefined;
-            jwt.value = undefined;
-            userProf.value = undefined;
-            is_auth.value = false;
+            await logout();
+
             return false;
         } else if (!isTokenValid(jwt.value)) {
             await refreshTokens();
@@ -119,6 +117,8 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     onBeforeMount(async () => {
         await getUserInfo();
     });
+
+    setInterval(updateTokens, 60000);
 
     return {userProf, jwt, is_auth, login, logout};
 });
