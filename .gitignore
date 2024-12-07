@@ -1,6 +1,7 @@
 /app/local_settings.py
 **/__pycache__/**
 **/node_modules/**
+media
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

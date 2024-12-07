@@ -1,0 +1,139 @@
+import {defineStore} from "pinia"
+import {computed, ref, onBeforeMount} from 'vue';
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import { useLocalStorage } from "@vueuse/core";
+import type { RefSymbol } from "@vue/reactivity";
+import type { User} from "@/customTypes"
+import router from "@/router";
+
+const useUserProfileStore = defineStore("UserProfileStore", () => {
+    type Tokens = {
+        access: string;
+        refresh: string;
+    };
+
+    type Token = string | undefined;
+    
+    const userProf = ref<User>();
+
+    const jwt = useLocalStorage<Token>("jwt", undefined);
+    const refresh = useLocalStorage<Token>("refresh", undefined);
+
+    const is_auth = useLocalStorage<boolean>("authorization", false);
+
+    function isTokenValid(token: Token): boolean {
+        if (token === undefined) {
+            return false;
+        } else {
+            const decoded = jwtDecode(String(token));
+            return Date.now() < decoded.exp! * 1000;
+        }
+    }
+
+    async function login(username: string, password: string): Promise<boolean> {      
+        try {
+            const result = (
+                await axios.post<Tokens>("/api/auth/login/", {
+                    username: username,
+                    password: password,
+                })
+            ).data;
+
+            jwt.value = result.access;
+            refresh.value = result.refresh;
+
+            await getUserInfo();
+            return true;
+        } catch(error){
+            console.error("При авторизации ошибка", error);
+            return false;
+        }
+    }
+
+    async function registry() {
+
+    }
+
+    async function logout() {
+        const refreshCopy = refresh.value;
+        refresh.value = undefined;
+        jwt.value = undefined;
+        userProf.value = undefined;
+        is_auth.value = false;
+
+        await axios.post("/api/auth/logout/", {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            },
+            refresh: refreshCopy,
+        });
+
+        await axios.post("/admin/logout/")
+
+        router.push('/login');
+    }
+
+    async function updateTokens(): Promise<boolean> {
+        if (!isTokenValid(refresh.value)) {
+            await logout();
+            return false;
+        } else if (!isTokenValid(jwt.value)) {
+            await refreshTokens();
+        }
+
+        return true;
+    }
+
+    async function refreshTokens() {
+        const newTokens: Tokens = (
+        await axios.post("/api/auth/refresh/", {
+                refresh: refresh.value,
+            })
+        ).data;
+
+        jwt.value = newTokens.access;
+        refresh.value = newTokens.refresh;
+    }
+
+    async function getUserInfo() {
+        if (await updateTokens()) {
+            try {
+                userProf.value = (await axios.get<User>("/api/profile/info/", {
+                    headers: {
+                        Authorization: `Bearer ${jwt.value}`
+                    },
+                })).data;
+            } catch(error) {
+                console.error("Ошибка при получении инфы о пользователе", error);
+            }
+        }
+    }
+
+    async function getAuthInfo() {
+        if (await updateTokens()) {
+            try {
+                const data = (await axios.get("/api/user/auth_info/", {
+                    headers: {
+                        Authorization: `Bearer ${jwt.value}`
+                    },
+                })).data;
+
+                is_auth.value = data["is_auth"];
+            } catch(error) {
+                console.error("Ошибка при получении инфы об авторизации пользователя", error);
+            }
+        }
+    }
+
+    onBeforeMount(async () => {
+        await getAuthInfo();
+        await getUserInfo();
+    });
+
+    setInterval(updateTokens, 60000);
+
+    return {userProf, jwt, is_auth, login, logout, getUserInfo};
+});
+
+export default useUserProfileStore;

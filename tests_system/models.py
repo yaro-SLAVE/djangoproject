@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Image(models.Model):
-    image_name = models.TextField("Название")
     image = models.ImageField("Изображение", upload_to="images")
 
 class Group(models.Model):
@@ -13,29 +12,42 @@ class Group(models.Model):
 
 class Role(models.Model):
     role = models.TextField("Название роли")
+    description = models.TextField("Описание роли")
 
     def __str__(self) -> str:
         return self.role
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_name = models.TextField("ФИО")
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
-    total_scores = models.IntegerField("Общее количество баллов")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
+    total_scores = models.IntegerField("Общее количество баллов", null=True, blank=True)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
-    profile_logo = models.ForeignKey(Image, on_delete=models.CASCADE, null=True)
+    profile_logo = models.ForeignKey(Image, on_delete=models.CASCADE, null=True, blank=True)
 
 class TopicType(models.Model):
     topic_type_name = models.TextField("Название темы")
+    description = models.TextField("Описание роли")
 
     def __str__(self) -> str:
         return self.topic_type_name
+    
+class TaskAnswersType(models.Model):
+    type_name = models.TextField("Тип ответов")
+    description = models.TextField("Описание типа")
+
+    def __str__(self) -> str:
+        return self.type_name
 
 class Task(models.Model):
+    task_statement = models.TextField("Условие задания")
     topic_type = models.ForeignKey(TopicType, on_delete=models.CASCADE)
+    answers_type = models.ForeignKey(TaskAnswersType, on_delete=models.CASCADE)
     task_body = models.JSONField("Тело теста")
+    correct_answer = models.IntegerField("Верный ответ")
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 class Test(models.Model):
+    name = models.TextField("Название теста")
     topic_type = models.ForeignKey(TopicType, on_delete=models.CASCADE)
 
 class TestTask(models.Model):
@@ -45,7 +57,6 @@ class TestTask(models.Model):
 class AnsweredTask(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     selected_answer = models.IntegerField("Выбранный ответ")
-    correct_answer = models.IntegerField("Верный ответ")
 
 class FinishedTest(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
@@ -62,9 +73,3 @@ class FinishedTestAnsweredTask(models.Model):
 class TaskImage(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
-
-class RefreshToken(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    refresh = models.TextField("Refresh")
-    date_create = models.DateTimeField("Дата генерации")
-    is_valid = models.BooleanField("Валиден")

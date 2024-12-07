@@ -24,27 +24,31 @@ from tests_system import views
 
 from rest_framework_simplejwt import views as jwt_views
 
+from django.conf.urls.static import static
+from django.conf import settings
+
+
 
 router = DefaultRouter()
-router.register("users", UserViewset, basename="users")
-router.register("profiles", ProfileViewset, basename="profiles")
-router.register("roles", RoleViewset, basename="roles")
-router.register("groups", GroupViewset, basename="groups")
-router.register("topic_types", TopicTypeViewset, basename="topic_types")
-router.register("tasks", TaskViewset, basename="tasks")
-router.register("tests", TestViewset, basename="tests")
-router.register("answered_tasks", AnsweredTaskViewset, basename="answered_tasks")
-router.register("finished_tests", FinishedTestViewset, basename="finished_tests")
-router.register("finished_test_answered_tasks", FinishedTestAnsweredTaskViewset, basename="finished_test_answered_tasks")
-router.register("test_tasks", TestTaskViewset, basename="test_tasks")
-router.register("images", ImageViewset, basename = "images")
-router.register("task_images", TaskImageViewset, basename = "task_images")
-router.register("refresh_tokens", RefreshTokenViewset, basename = "refresh_tokens")
+router.register("user", UserViewset, basename="user")
+router.register("profile", ProfileViewset, basename="profile")
+router.register("role", RoleViewset, basename="role")
+router.register("group", GroupViewset, basename="group")
+router.register("topic_type", TopicTypeViewset, basename="topic_type")
+router.register("task", TaskViewset, basename="task")
+router.register("test", TestViewset, basename="test")
+router.register("answered_task", AnsweredTaskViewset, basename="answered_task")
+router.register("finished_test", FinishedTestViewset, basename="finished_test")
+router.register("finished_test_answered_task", FinishedTestAnsweredTaskViewset, basename="finished_test_answered_task")
+router.register("test_task", TestTaskViewset, basename="test_task")
+router.register("image", ImageViewset, basename = "image")
+router.register("task_image", TaskImageViewset, basename = "task_image")
+router.register("task_answers_type", TaskAnswersTypeViewset, basename = "task_answer_type")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/login/', jwt_views.TokenObtainPairView.as_view()),
+    path('api/auth/refresh/', jwt_views.TokenRefreshView.as_view()),
+    path('api/auth/logout/', jwt_views.TokenBlacklistView.as_view()),
     path("api/", include(router.urls)),
-    path('api/auth/', views.AuthorizationAPIView.as_view(), name='authoriztion'),
-]
+] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

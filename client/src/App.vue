@@ -1,111 +1,90 @@
 <script setup lang="ts">
-    import {computed, ref, onBeforeMount} from 'vue';
+    import {computed, ref, onBeforeMount, onActivated, onMounted} from 'vue';
     import axios from "axios";
     import Cookies from 'js-cookie';
+    import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+    import { faBookmark }  from '@fortawesome/free-regular-svg-icons'
+    import { storeToRefs } from 'pinia';
+    import useUserProfileStore from './stores/userProfileStore';
+    import router from "./router/index"
+    import type { User } from "@/customTypes"
+
+    const userProfileStore = useUserProfileStore();
+
+    const {
+        userProf
+    } = storeToRefs(userProfileStore);
+
+    const isNotLoginPage = computed({
+        get() {
+            return router.currentRoute.value.name !== 'Login' && router.currentRoute.value.name !== 'Registration';
+        },
+
+        set() {}
+    });
+
+    const currentPage = computed(() => ({
+        // TODO
+    }))
+
+    async function logout() {
+        await userProfileStore.logout();
+    }
 
     onBeforeMount(async () => {
         axios.defaults.headers.common['X-CSRFToken'] = Cookies.get("csrftoken");
-        await fetchData();
-    })
-
-    async function fetchData() {
-        const r = await axios.get("/api/users/");
-        const d = await axios.get("/api/roles/");
-        const g = await axios.get("/api/groups/");
-        const p = await axios.get("/api/profiles/");
-        profiles.value = p.data;
-        users.value = r.data;
-        roles.value = d.data;   
-        groups.value = g.data;
-    }
-
-    const groups = ref([]);
-    const profiles = ref([]);
-    const profileToAdd = ref({});
-    const roles = ref({});
-    const users = ref({});
-
-    async function onLoadClick() {
-        const r = await axios.get("/api/profiles/");
-        console.log(r.data);
-        profiles.value = r.data;
-    }
-
-    async function onProfileAdd() {
-        await axios.post("/api/profiles/", {
-            ...profileToAdd.value,
-        });
-        await fetchData();
-    }
+    });
 </script>
 
 <template>
-    <div>
-        <div v-for="item in profiles">
-            <b>{{ item.user.username }}</b>
-        </div>
+    <nav v-if="isNotLoginPage" class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/">
+            <FontAwesomeIcon :icon="faBookmark" />
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav d-flex justify-content-center">
+                <li class="nav-item  mx-3">
+                    <a class="nav-link" href="/tasks">
+                        Задания
+                    </a>
+                </li>
 
-        <button @click="onLoadClick">Загрузить</button>
-    </div>
+                <li class="nav-item  mx-3">
+                    <a class="nav-link" href="/tests">
+                        Тесты
+                    </a>
+                </li>
 
-    <form @submit.prevent.stop="onProfileAdd">
-        <div class="row">
-            <div class="col">
-                <div class="form-floating">
-                    <!-- ТУТ ПОДКЛЮЧИЛ studentToAdd.name -->
-                    <input
-                    type="text"
-                    class="form-control"
-                    v-model="profileToAdd.profile_name"
-                    required
-                    />
-                    <label for="floatingInput">Фио</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <!-- А ТУТ ПОДКЛЮЧИЛ К select -->
-                <div class="form-floating">
-                    <select class="form-select" v-model="profileToAdd.group_id" required>
-                        <option :value="g.id" v-for="g in groups">{{ g.group_name }}</option>
-                    </select>
-                    <label for="floatingInput">Группа</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="form-floating">
-                    <select class="form-select" v-model="profileToAdd.role_id" required>
-                        <option :value="g.id" v-for="g in roles">{{ g.role }}</option>
-                    </select>
-                    <label for="floatingInput">Роль</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="form-floating">
-                    <select class="form-select" v-model="profileToAdd.user_id" required>
-                        <option :value="g.id" v-for="g in users">{{ g.username }}</option>
-                    </select>
-                    <label for="floatingInput">User</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="form-floating">
-                    <!-- ТУТ ПОДКЛЮЧИЛ studentToAdd.name -->
-                    <input
-                    type="number"
-                    class="form-control"
-                    v-model="profileToAdd.total_scores"
-                    required
-                    />
-                    <label for="floatingInput">баллы</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-primary">
-                    Добавить
-                </button>
+                <li class="nav-item  mx-3">
+                    <a class="nav-link" href="/raiting">
+                        Рейтинг
+                    </a>
+                </li>
+
+                <li class="nav-item dropdown mr-auto mx-3">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img v-if="userProf?.logo === undefined" src="../public/default_profile.jpg" class="img-fluid rouded" style="max-height: 40px; overflow: hiden;">
+                        <img v-if="userProf?.logo !== undefined" :src='userProf?.logo' class="img-fluid rounded" style="max-height: 40px; overflow: hiden;">
+                        <label class="mx-2">{{userProf?.username}}</label>
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="/profile">Профиль</a></li>
+                        <li><a class="dropdown-item" href="/admin">Админка</a></li>
+                        <li><button @click="logout" class="dropdown-item">Выйти</button></li>
+                    </ul>
+                </li>
+            </ul>
             </div>
         </div>
-    </form>
+    </nav>
+
+    <main class="container d-flex flex-column justify-content-center align-items-center">
+        <router-view/>
+    </main>
 </template>
 
 <style scoped>
