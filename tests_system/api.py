@@ -19,6 +19,8 @@ import pyotp
 
 from django.core.cache import cache
 
+from django.conf import settings
+
 class UserViewset(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
@@ -28,6 +30,15 @@ class UserViewset(
 ):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    @action(url_path="auth_info", methods=["GET"], detail = False)
+    def get_auth_info(self, request, *args, **kwargs):
+        user = request.user
+        user_info = {
+            "is_auth": user.is_authenticated
+        }
+
+        return Response(user_info)
 
 class ProfileViewset(
     mixins.CreateModelMixin,
@@ -39,21 +50,40 @@ class ProfileViewset(
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     
-    def get_queryset(self):
-        qs = super().get_queryset()
-        if not self.request.user.is_superuser:
-            qs = qs.filter(user = self.request.user.id)
-        return qs
-    
-    @action(url_path="info", methods=["GET"], detail = False)
+    @action(url_path="info", methods=["GET"], detail = False,  permission_classes = [IsAuthenticated])
     def get_info(self, request, *args, **kwargs):
         user = request.user
-        profile = Profile.objects.filter(user = user.id).first()
+        profile = Profile.objects.get(user = user.id)
+        #profile_full_info = Profile.objects.filter(role = profile.role, group = profile.group).select_related()
         user_info = {
-            "is_authenticated": user.is_authenticated,
             "is_superuser": user.is_superuser,
             "username": user.username,
-            "role": profile.total_scores
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role": profile.role.role,
+            "role_description": profile.role.description,
+            "email": user.email,
+            "total_scores": profile.total_scores
+        }
+
+        if (profile.role == 'student'):
+            user_info.update({
+                "group": profile.group.group_name
+            })
+
+        if (profile.profile_logo != None):
+            user_info.update({
+                "logo": profile.profile_logo.image.url
+            })
+
+        return Response(user_info)
+    
+    @action(url_path="user_id", methods=["GET"], detail = False)
+    def get_user_id(self, request, *args, **kwargs):
+        user = request.user
+        profile = Profile.objects.get(user = user.id)
+        user_info = {
+            "id": profile.id
         }
 
         return Response(user_info)

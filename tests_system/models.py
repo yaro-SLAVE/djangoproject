@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Image(models.Model):
-    image_name = models.TextField("Название")
     image = models.ImageField("Изображение", upload_to="images")
 
 class Group(models.Model):
@@ -13,6 +12,7 @@ class Group(models.Model):
 
 class Role(models.Model):
     role = models.TextField("Название роли")
+    description = models.TextField("Описание роли")
 
     def __str__(self) -> str:
         return self.role

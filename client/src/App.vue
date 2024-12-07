@@ -46,30 +46,30 @@
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-flex flex-row">
-                <li class="nav-item">
+            <ul class="navbar-nav d-flex justify-content-center">
+                <li class="nav-item  mx-3">
                     <a class="nav-link" href="/tasks">
                         Задания
                     </a>
                 </li>
 
-                <li class="nav-item">
+                <li class="nav-item  mx-3">
                     <a class="nav-link" href="/tests">
                         Тесты
                     </a>
                 </li>
 
-                <li class="nav-item">
+                <li class="nav-item  mx-3">
                     <a class="nav-link" href="/raiting">
                         Рейтинг
                     </a>
                 </li>
 
-                <li class="nav-item dropdown mr-auto">
+                <li class="nav-item dropdown mr-auto mx-3">
                     <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img v-if="userProf?.logo === undefined" src="../public/default_profile.jpg" class="img-fluid" style="width: 25px; height: 25px; overflow: hiden;">
-                        <img v-if="userProf?.logo !== undefined" :src='userProf?.logo' class="img-fluid" style="width: 25px; height: 25px; overflow: hiden;">
-                        <label>{{userProf?.username}}</label>
+                        <img v-if="userProf?.logo === undefined" src="../public/default_profile.jpg" class="img-fluid rouded" style="max-height: 40px; overflow: hiden;">
+                        <img v-if="userProf?.logo !== undefined" :src='userProf?.logo' class="img-fluid rounded" style="max-height: 40px; overflow: hiden;">
+                        <label class="mx-2">{{userProf?.username}}</label>
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="/profile">Профиль</a></li>

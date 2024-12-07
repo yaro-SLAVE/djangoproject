@@ -24,6 +24,10 @@ from tests_system import views
 
 from rest_framework_simplejwt import views as jwt_views
 
+from django.conf.urls.static import static
+from django.conf import settings
+
+
 
 router = DefaultRouter()
 router.register("user", UserViewset, basename="user")
@@ -47,4 +51,4 @@ urlpatterns = [
     path('api/auth/refresh/', jwt_views.TokenRefreshView.as_view()),
     path('api/auth/logout/', jwt_views.TokenBlacklistView.as_view()),
     path("api/", include(router.urls)),
-]
+] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

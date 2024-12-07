@@ -77,7 +77,6 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     async function updateTokens(): Promise<boolean> {
         if (!isTokenValid(refresh.value)) {
             await logout();
-
             return false;
         } else if (!isTokenValid(jwt.value)) {
             await refreshTokens();
@@ -87,9 +86,8 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
     }
 
     async function refreshTokens() {
-        const simpleAxios = axios.create();
         const newTokens: Tokens = (
-        await simpleAxios.post("/api/auth/refresh/", {
+        await axios.post("/api/auth/refresh/", {
                 refresh: refresh.value,
             })
         ).data;
@@ -106,21 +104,36 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
                         Authorization: `Bearer ${jwt.value}`
                     },
                 })).data;
-
-                is_auth.value = userProf.value.is_authenticated;
             } catch(error) {
                 console.error("Ошибка при получении инфы о пользователе", error);
             }
         }
     }
 
+    async function getAuthInfo() {
+        if (await updateTokens()) {
+            try {
+                const data = (await axios.get("/api/user/auth_info/", {
+                    headers: {
+                        Authorization: `Bearer ${jwt.value}`
+                    },
+                })).data;
+
+                is_auth.value = data["is_auth"];
+            } catch(error) {
+                console.error("Ошибка при получении инфы об авторизации пользователя", error);
+            }
+        }
+    }
+
     onBeforeMount(async () => {
+        await getAuthInfo();
         await getUserInfo();
     });
 
     setInterval(updateTokens, 60000);
 
-    return {userProf, jwt, is_auth, login, logout};
+    return {userProf, jwt, is_auth, login, logout, getUserInfo};
 });
 
 export default useUserProfileStore;

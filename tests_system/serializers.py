@@ -24,10 +24,10 @@ class RoleSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class ProfileSerializer(serializers.ModelSerializer):
-    group = serializers.PrimaryKeyRelatedField(queryset = Group.objects.all(), read_only = False)
-    role = serializers.PrimaryKeyRelatedField(queryset = Role.objects.all(), read_only = False)
-    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False)
-    image = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(), read_only = False)
+    group = serializers.PrimaryKeyRelatedField(queryset = Group.objects.all(), read_only = False, required = False)
+    role = serializers.PrimaryKeyRelatedField(queryset = Role.objects.all(), read_only = False, required = False)
+    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False, required = False)
+    profile_logo = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(), read_only = False, required = False)
 
     def create(self, validated_data):
         if 'request' in self.context:
