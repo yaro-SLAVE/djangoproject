@@ -29,11 +29,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False, required = False)
     profile_logo = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(), read_only = False, required = False)
 
-    def create(self, validated_data):
-        if 'request' in self.context:
-            validated_data['user'] = self.context['request'].user.id
-
-            return super().create(validated_data)
 
     class Meta:
         model = Profile
@@ -51,14 +46,14 @@ class TaskAnswersTypeSerializer(serializers.ModelSerializer):
 
 class TaskSerializer(serializers.ModelSerializer):
     topic_type = serializers.PrimaryKeyRelatedField(queryset = TopicType.objects.all(), read_only = False)
-    task_answers_type = serializers.PrimaryKeyRelatedField(queryset = TaskAnswersType.objects.all(), read_only = False)
-    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False)
+    answers_type = serializers.PrimaryKeyRelatedField(queryset = TaskAnswersType.objects.all(), read_only = False)
+    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False, required = False)
 
     def create(self, validated_data):
         if 'request' in self.context:
-            validated_data['user'] = self.context['request'].user.id
+            validated_data['user'] = self.context['request'].user
 
-            return super().create(validated_data)
+        return super().create(validated_data)
 
     class Meta:
         model = Task
@@ -88,13 +83,13 @@ class AnsweredTaskSerializer(serializers.ModelSerializer):
 
 class FinishedTestSerializer(serializers.ModelSerializer):
     test = serializers.PrimaryKeyRelatedField(queryset = Test.objects.all(), read_only = False)
-    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False)
+    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False, required = False)
 
     def create(self, validated_data):
         if 'request' in self.context:
-            validated_data['user'] = self.context['request'].user.id
+            validated_data['user'] = self.context['request'].user
 
-            return super().create(validated_data)
+        return super().create(validated_data)
 
     class Meta:
         model = FinishedTest

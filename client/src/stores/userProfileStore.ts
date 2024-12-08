@@ -44,6 +44,8 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
             refresh.value = result.refresh;
 
             await getUserInfo();
+
+            router.push('/');
             return true;
         } catch(error){
             console.error("При авторизации ошибка", error);
@@ -131,7 +133,7 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
         await getUserInfo();
     });
 
-    setInterval(updateTokens, 60000);
+    setInterval(updateTokens, 30000);
 
     return {userProf, jwt, is_auth, login, logout, getUserInfo};
 });

@@ -7,7 +7,6 @@
     import { storeToRefs } from 'pinia';
     import useUserProfileStore from './stores/userProfileStore';
     import router from "./router/index"
-    import type { User } from "@/customTypes"
 
     const userProfileStore = useUserProfileStore();
 
@@ -22,10 +21,6 @@
 
         set() {}
     });
-
-    const currentPage = computed(() => ({
-        // TODO
-    }))
 
     async function logout() {
         await userProfileStore.logout();
@@ -46,30 +41,26 @@
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav d-flex justify-content-center">
-                <li class="nav-item  mx-3">
+            <ul class="navbar-nav d-flex flex-row">
+                <li class="nav-item mx-3" :class="{ 'active': router.currentRoute.value.name === 'Tasks'}">
                     <a class="nav-link" href="/tasks">
                         Задания
                     </a>
                 </li>
 
-                <li class="nav-item  mx-3">
+                <li class="nav-item  mx-3" :class="{ 'active': router.currentRoute.value.name === 'Tests'}">
                     <a class="nav-link" href="/tests">
                         Тесты
                     </a>
                 </li>
 
-                <li class="nav-item  mx-3">
-                    <a class="nav-link" href="/raiting">
-                        Рейтинг
-                    </a>
-                </li>
-
-                <li class="nav-item dropdown mr-auto mx-3">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img v-if="userProf?.logo === undefined" src="../public/default_profile.jpg" class="img-fluid rouded" style="max-height: 40px; overflow: hiden;">
-                        <img v-if="userProf?.logo !== undefined" :src='userProf?.logo' class="img-fluid rounded" style="max-height: 40px; overflow: hiden;">
-                        <label class="mx-2">{{userProf?.username}}</label>
+                <li class="nav-item dropdown mx-3">
+                    <a class="nav-link dropdown-toggle form-inline" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="navbar-image-wrap-block">
+                            <img v-if="userProf?.logo === undefined" src="../public/default_profile.jpg" class="img-fluid" style="height: 100%">
+                            <img v-if="userProf?.logo !== undefined" :src='userProf?.logo' class="img-fluid" style="height: 100%">
+                        </div>
+                        <label>{{userProf?.username}}</label>
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="/profile">Профиль</a></li>
@@ -88,4 +79,17 @@
 </template>
 
 <style scoped>
+    .navbar-image-wrap-block {
+        width: 40px; 
+        height: 40px; 
+        border-radius: 50%;
+        overflow: hidden;
+    }
+
+    .profile-image-wrap-block {
+        width: 300px; 
+        height: 300px; 
+        border-radius: 50%;
+        overflow: hidden;
+    }
 </style>

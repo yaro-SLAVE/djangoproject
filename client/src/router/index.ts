@@ -5,11 +5,8 @@ import Tests from '../views/Tests.vue'
 import Profile from '../views/Profile.vue'
 import Login from '../views/Login.vue'
 import Registry from '../views/Registry.vue'
-import Raiting from '../views/Raiting.vue'
 import useUserProfileStore from '@/stores/userProfileStore'
 import { storeToRefs } from 'pinia';
-import { toValue, type RefSymbol } from '@vue/reactivity'
-import type { User } from "@/customTypes"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,7 +17,6 @@ const router = createRouter({
     { path: '/profile', component: Profile, name: 'Profile' },
     { path: '/login', component: Login, name: 'Login' },
     { path: '/registration', component: Registry, name: 'Registration' },
-    { path: '/raiting', component: Registry, name: 'Raiting' },
   ]
 });
 

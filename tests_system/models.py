@@ -44,7 +44,7 @@ class Task(models.Model):
     answers_type = models.ForeignKey(TaskAnswersType, on_delete=models.CASCADE)
     task_body = models.JSONField("Тело теста")
     correct_answer = models.IntegerField("Верный ответ")
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Test(models.Model):
     name = models.TextField("Название теста")

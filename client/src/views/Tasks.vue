@@ -38,7 +38,7 @@ import axios from 'axios';
     const answerB = ref("");
     const answerC = ref("");
     const answerD = ref("");
-    const correctAnswer = ref("");
+    const correctAnswer = ref(0);
     const answersType = ref("");
 
     onBeforeMount(async () => {
@@ -57,19 +57,54 @@ import axios from 'axios';
 
     async function fetchAllTasks() {
         currentSection.value = "allTasks";
+
+        tasksToShow.value = (await axios.get("/api/task/?show=all", {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            }
+        })).data;
     }
 
     async function fetchCurrentUserTasks() {
         currentSection.value = "currentUserTasks";
+
+        tasksToShow.value = (await axios.get("/api/task/?show=current_user", {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            }
+        })).data;
     }
 
     async function onTaskToAdd() {
+        const body = {
+            a: String(answerA.value),
+            b: String(answerB.value),
+            c: String(answerC.value),
+            d: String(answerD.value)
+        }
 
+        const taskBody = JSON.stringify(body);
+
+        const taskData = new FormData();
+
+        taskData.append('task_statement', taskStatement.value);
+        taskData.append('topic_type', taskTopicType.value);
+        taskData.append('answers_type', answersType.value);
+        taskData.append('task_body', taskBody);
+        taskData.append('correct_answer', String(correctAnswer.value));
+
+        const result = await axios.post("/api/task/", taskData, {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            }
+        });
+
+        console.log(result);
     }
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100" v-if="userProf?.role === 'teacher'">
         <div class="container-fluid">
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTasks" aria-controls="navbarTasks" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -77,18 +112,18 @@ import axios from 'axios';
           <div class="collapse navbar-collapse" id="navbarTasks">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-flex flex-row">
                 <li class="nav-item">
-                    <button id="allTasks" class="btn" :class="{ 'btn-primary': currentSection === 'allTasks'}" @submit.prevent.stop="fetchAllTasks">
+                    <button id="allTasks" class="btn" :class="{ 'btn-primary': currentSection === 'allTasks'}" v-on:click="fetchAllTasks()">
                         Все задания
                     </button>
                 </li>
 
-                <li class="nav-item" >
-                    <button id="currentUserTasks"  class="btn" :class="{ 'btn-primary': currentSection === 'currentUserTasks'}" @submit.prevent.stop="fetchCurrentUserTasks">
+                <li class="nav-item">
+                    <button id="currentUserTasks"  class="btn" :class="{ 'btn-primary': currentSection === 'currentUserTasks'}" v-on:click="fetchCurrentUserTasks()">
                         Мои задания
                     </button>
                 </li>
 
-                <li class="nav-item" >
+                <li class="nav-item">
                     <button id="addTask" type="button" class="btn" data-bs-toggle="modal" data-bs-target="#addTaskModal">
                         + Добавить задание
                     </button>
@@ -101,15 +136,15 @@ import axios from 'axios';
     <div class="mt-5 w-100">
         <div v-for="type in topicTypes">
             <p>
-                <button class="btn" type="button" data-toggle="collapse" :data-target="'#' + type.id + 'Collapse'" aria-expanded="false" :aria-controls="type.id + 'Collapse'">
+                <button class="btn" type="button" data-bs-toggle="collapse" :data-bs-target="'#' + type.id + 'Collapse'" aria-expanded="false" :aria-controls="type.id + 'Collapse'" role="button">
                     {{ type.topic_type_name }}
                 </button>
             </p>
               <div class="collapse" :id="type.id + 'Collapse'">
                 <div class="card card-body">
                     <div v-for="task in tasksToShow">
-                        <div>
-
+                        <div v-if="task.topic_type === type.id">
+                            <label>{{ task.task_statement }}</label>
                         </div>
                     </div>
                 </div>
@@ -145,7 +180,7 @@ import axios from 'axios';
 
                         <div data-mdb-input-init class="form-outline mb-4">                        
                           <label class="form-label" for="login">Условие задания</label>
-                          <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" v-model="taskStatement"></textarea>
+                          <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" v-model="taskStatement" required></textarea>
                         </div>
 
                         <div data-mdb-input-init class="form-outline mb-4">                        
@@ -208,7 +243,7 @@ import axios from 'axios';
                             </div>
                         </div>
                                             
-                        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block my-4">Добавить задание</button>
+                        <button class="btn btn-primary btn-block mb-4">Добавить задание</button>
                     </form>
                 </div>
                 <div class="modal-footer">

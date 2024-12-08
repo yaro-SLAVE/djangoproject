@@ -39,6 +39,15 @@ class UserViewset(
         }
 
         return Response(user_info)
+    
+    @action(url_path="user_id", methods=["GET"], detail = False)
+    def get_user_id(self, request, *args, **kwargs):
+        user = request.user
+        user_info = {
+            "id": user.id
+        }
+
+        return Response(user_info)
 
 class ProfileViewset(
     mixins.CreateModelMixin,
@@ -78,7 +87,7 @@ class ProfileViewset(
 
         return Response(user_info)
     
-    @action(url_path="user_id", methods=["GET"], detail = False)
+    @action(url_path="profile_id", methods=["GET"], detail = False)
     def get_user_id(self, request, *args, **kwargs):
         user = request.user
         profile = Profile.objects.get(user = user.id)
@@ -233,7 +242,11 @@ class TaskViewset(
 
     def get_queryset(self):
         qs = super().get_queryset()
-        qs = qs.filter(user = self.request.user.id)
+        tasks_show_param = self.request.GET.get('show')
+
+        if tasks_show_param == 'current_user':
+            qs = qs.filter(user = self.request.user)
+
         return qs
     
     class StatsSerializer(serializers.Serializer):
