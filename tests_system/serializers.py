@@ -3,10 +3,18 @@ from rest_framework import serializers
 from tests_system.models import *
 from django.contrib.auth.models import User
 
+from django.contrib.auth.hashers import make_password
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = "__all__"
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        validated_data['password'] = make_password(password)
+        validated_data['is_active'] = True
+        return super().create(validated_data)
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:

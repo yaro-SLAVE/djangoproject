@@ -57,14 +57,14 @@
                 <li class="nav-item dropdown mx-3">
                     <a class="nav-link dropdown-toggle form-inline" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="navbar-image-wrap-block">
-                            <img v-if="userProf?.logo === undefined" src="../public/default_profile.jpg" class="img-fluid" style="height: 100%">
+                            <img v-if="userProf?.logo === undefined" src="../default_profile.jpg" class="img-fluid" style="height: 100%">
                             <img v-if="userProf?.logo !== undefined" :src='userProf?.logo' class="img-fluid" style="height: 100%">
                         </div>
                         <label>{{userProf?.username}}</label>
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="/profile">Профиль</a></li>
-                        <li><a class="dropdown-item" href="/admin">Админка</a></li>
+                        <li><a v-if="userProf.role === 'admin'" class="dropdown-item" href="/admin">Админка</a></li>
                         <li><button @click="logout" class="dropdown-item">Выйти</button></li>
                     </ul>
                 </li>

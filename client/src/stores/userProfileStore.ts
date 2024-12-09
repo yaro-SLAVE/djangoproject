@@ -43,9 +43,7 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
             jwt.value = result.access;
             refresh.value = result.refresh;
 
-            await getUserInfo();
-
-            router.push('/');
+            await getAuthInfo();
             return true;
         } catch(error){
             console.error("При авторизации ошибка", error);
@@ -53,8 +51,38 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
         }
     }
 
-    async function registry() {
+    async function registry(
+        username: string, 
+        password: string,
+        first_name: string,
+        last_name: string,
+        email: string,
+        role: number
+    ) {
+        try {
+            const userData = new FormData();
+            userData.append('username', username);
+            userData.append('password', password);
+            userData.append('first_name', first_name);
+            userData.append('last_name', last_name);
 
+            if (email !== "") {
+                userData.append('email', email);
+            }
+
+            const user = (await axios.post("/api/user/", userData)).data;
+
+            const profData = new FormData();
+            profData.append('user', String(user.id));
+            profData.append('role', String(role));
+
+            const profile = (await axios.post("/api/profile/", profData));
+
+            return true;
+        } catch(error) {
+            console.error(error);
+            return false;
+        }
     }
 
     async function logout() {
@@ -135,7 +163,7 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
 
     setInterval(updateTokens, 30000);
 
-    return {userProf, jwt, is_auth, login, logout, getUserInfo};
+    return {userProf, jwt, is_auth, login, logout, getUserInfo, registry};
 });
 
 export default useUserProfileStore;

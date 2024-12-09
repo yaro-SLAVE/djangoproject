@@ -125,6 +125,11 @@ class RoleViewset(
 ):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
+
+    def get_queryset(self):
+        qs =  super().get_queryset()
+        qs = qs.exclude(role = 'admin')
+        return qs
     
     class StatsSerializer(serializers.Serializer):
         count = serializers.IntegerField()

@@ -71,7 +71,7 @@
             <label class="mb-4">{{userProf?.username}}</label>
 
             <div class="profile-image-wrap-block">
-                <img v-if="userProf?.logo === undefined" src="../../public/default_profile.jpg" class="img-fluid" style="height: 100%">
+                <img v-if="userProf?.logo === undefined" src="../../default_profile.jpg" class="img-fluid" style="height: 100%">
                 <img v-if="userProf?.logo !== undefined" :src='userProf?.logo' class="img-fluid" style="height: 100%">
             </div>
 
