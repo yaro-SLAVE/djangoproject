@@ -4,7 +4,7 @@
     import useUserProfileStore from '@/stores/userProfileStore';
     import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
     import { faBookmark } from '@fortawesome/free-regular-svg-icons';
-import axios from 'axios';
+    import axios from 'axios';
 
     const userStore = useUserProfileStore();
 
@@ -31,21 +31,47 @@ import axios from 'axios';
     const topicTypes = ref({});
     const answersTypes = ref({});
 
-    const taskStatement = ref("");
-    const taskImage = ref("");
-    const taskTopicType = ref("");
-    const answerA = ref("");
-    const answerB = ref("");
-    const answerC = ref("");
-    const answerD = ref("");
+    const taskStatement = ref();
+    const taskImage = ref();
+    const taskImageURL = ref();
+    const taskTopicType = ref();
+
+    const answerA = ref();
+    const answerB = ref();
+    const answerC = ref();
+    const answerD = ref();
+
     const correctAnswer = ref(0);
-    const answersType = ref("");
+    const answersType = ref();
+
+    const imageA = ref();
+    const imageB = ref();
+    const imageC = ref();
+    const imageD = ref();
+
+    const imageAURL = ref();
+    const imageBURL = ref();
+    const imageCURL = ref();
+    const imageDURL = ref();
+
+    const currentTask = ref();
 
     onBeforeMount(async () => {
         await fetchTopicTypes();
         await fetchTaskAnswersTypes();
         await fetchAllTasks();
     });
+
+    async function changeAnswersImages() {
+        imageAURL.value = URL.createObjectURL(imageA.value.files[0]);
+        imageBURL.value = URL.createObjectURL(imageB.value.files[0]);
+        imageCURL.value = URL.createObjectURL(imageC.value.files[0]);
+        imageDURL.value = URL.createObjectURL(imageD.value.files[0]);
+    }
+
+    async function changeTaskImage() {
+        taskImageURL.value = URL.createObjectURL(taskImage.value.files[0]);
+    }
 
     async function fetchTopicTypes() {
         topicTypes.value = (await axios.get("/api/topic_type/")).data;
@@ -76,22 +102,50 @@ import axios from 'axios';
     }
 
     async function onTaskToAdd() {
-        const body = {
-            a: String(answerA.value),
-            b: String(answerB.value),
-            c: String(answerC.value),
-            d: String(answerD.value)
-        }
-
-        const taskBody = JSON.stringify(body);
-
         const taskData = new FormData();
 
         taskData.append('task_statement', taskStatement.value);
         taskData.append('topic_type', taskTopicType.value);
-        taskData.append('answers_type', answersType.value);
-        taskData.append('task_body', taskBody);
+        taskData.append('answers_type', answersType.value.id);
         taskData.append('correct_answer', String(correctAnswer.value));
+
+        if (taskImage.value.files[0] != undefined) {
+            taskData.append('task_image', taskImage.value.files[0]);
+        }
+
+        if (answersType.value.type_name === 'text') {
+            const body = {
+                a: String(answerA.value),
+                b: String(answerB.value),
+                c: String(answerC.value),
+                d: String(answerD.value)
+            }
+
+            const taskBody = JSON.stringify(body);
+
+            taskData.append('task_body', taskBody);
+
+            answerA.value = "";
+            answerB.value = "";
+            answerC.value = "";
+            answerD.value = "";
+        } else if (answersType.value.type_name === 'image') {
+            const body = {
+                a: String(imageA.value.files[0]),
+                b: String(imageB.value.files[0]),
+                c: String(imageC.value.files[0]),
+                d: String(imageD.value.files[0])
+            }
+
+            const taskBody = JSON.stringify(body);
+
+            taskData.append('task_body', taskBody);
+
+            imageA.value = "";
+            imageB.value = "";
+            imageC.value = "";
+            imageD.value = "";
+        }
 
         const result = await axios.post("/api/task/", taskData, {
             headers: {
@@ -99,12 +153,22 @@ import axios from 'axios';
             }
         });
 
-        console.log(result);
+        taskStatement.value = "";
+        taskImage.value = "";
+        taskTopicType.value = "";
+        answersType.value = "";
+        correctAnswer.value = 0;
+
+        await fetchCurrentUserTasks();
+    }
+
+    async function updateCurrentTask(task) {
+        currentTask.value = task;
     }
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100" v-if="userProf.role === 'teacher'">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100" v-if="userProf?.role === 'teacher'">
         <div class="container-fluid">
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTasks" aria-controls="navbarTasks" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -143,9 +207,11 @@ import axios from 'axios';
               <div class="collapse" :id="type.id + 'Collapse'">
                 <div class="card card-body">
                     <div v-for="task in tasksToShow">
-                        <div v-if="task.topic_type === type.id">
-                            <label>{{ task.task_statement }}</label>
-                        </div>
+                        <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#taskModal" v-on:click="updateCurrentTask(task)">
+                            <div v-if="task.topic_type === type.id">
+                                <vue-mathjax :formula="task.task_statement"></vue-mathjax>
+                            </div>
+                        </button>
                     </div>
                 </div>
               </div>
@@ -172,7 +238,7 @@ import axios from 'axios';
 
                             <div class="form-floating mb-4 col-6">
                                 <select class="form-select" v-model="answersType" required>
-                                    <option :value="aT.id" v-for="aT in answersTypes">{{ aT.description }}</option>
+                                    <option :value="aT" v-for="aT in answersTypes">{{ aT.description }}</option>
                                 </select>
                                 <label for="floatingInput">Тип ответов</label>
                             </div>
@@ -181,31 +247,74 @@ import axios from 'axios';
                         <div data-mdb-input-init class="form-outline mb-4">                        
                           <label class="form-label" for="login">Условие задания</label>
                           <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" v-model="taskStatement" required></textarea>
+                          <vue-mathjax :formula="taskStatement"></vue-mathjax>
                         </div>
 
                         <div data-mdb-input-init class="form-outline mb-4">                        
                             <label class="form-label" for="login">Изображение к заданию</label>
-                            <input type="file" class="form-control" ref="taskImage" />
+                            <input type="file" class="form-control col-6" ref="taskImage" @change="changeTaskImage()"/>
+                            <div class="task-image-wrap my-4 text-center col-6">
+                                <img :src="taskImageURL" class="img-fluid" style="height: 100%">
+                            </div>
                         </div>
 
-                        <div data-mdb-input-init class="form-outline mb-4">
-                            <label class="form-label" for="form2Example1">a{{')'}}</label>
-                            <input type="text" class="form-control" v-model="answerA" required />
+                        <div v-if="answersType?.type_name === 'text'">
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <label class="form-label" for="form2Example1">a{{')'}}</label>
+                                <input type="text" class="form-control" v-model="answerA" required />
+                                <vue-mathjax :formula="answerA"></vue-mathjax>
+                            </div>
+    
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <label class="form-label" for="form2Example1">b{{')'}}</label>
+                                <input type="text" class="form-control" v-model="answerB" required />
+                                <vue-mathjax :formula="answerB"></vue-mathjax>
+                            </div>
+    
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <label class="form-label" for="form2Example1">c{{')'}}</label>
+                                <input type="text" class="form-control" v-model="answerC" required />
+                                <vue-mathjax :formula="answerC"></vue-mathjax>
+                            </div>
+    
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <label class="form-label" for="form2Example1">d{{')'}}</label>
+                                <input type="text" class="form-control" v-model="answerD" required />
+                                <vue-mathjax :formula="answerD"></vue-mathjax>
+                            </div>
                         </div>
 
-                        <div data-mdb-input-init class="form-outline mb-4">
-                            <label class="form-label" for="form2Example1">b{{')'}}</label>
-                            <input type="text" class="form-control" v-model="answerB" required />
-                        </div>
+                        <div v-if="answersType?.type_name === 'image'">
+                            <div class="my-4 row">
+                                <label class="form-label">a{{')'}}</label>
+                                <input type="file" class="form-control col-6" ref="imageA" @change="changeAnswersImages()"/>
+                                <div class="task-image-wrap my-4 text-center col-6">
+                                    <img :src="imageAURL" class="img-fluid" style="height: 100%">
+                                </div>
+                            </div>
 
-                        <div data-mdb-input-init class="form-outline mb-4">
-                            <label class="form-label" for="form2Example1">c{{')'}}</label>
-                            <input type="text" class="form-control" v-model="answerC" required />
-                        </div>
+                            <div class="my-4 row">
+                                <label class="form-label">b{{')'}}</label>
+                                <input type="file" class="form-control col-6" ref="imageB" @change="changeAnswersImages()"/>
+                                <div class="task-image-wrap my-4 text-center col-6">
+                                    <img :src="imageBURL" class="img-fluid" style="height: 100%">
+                                </div>
+                            </div>
 
-                        <div data-mdb-input-init class="form-outline mb-4">
-                            <label class="form-label" for="form2Example1">d{{')'}}</label>
-                            <input type="text" class="form-control" v-model="answerD" required />
+                            <div class="my-4 row">
+                                <input type="file" class="form-control col-6" ref="imageC" @change="changeAnswersImages()"/>
+                                <div class="task-image-wrap my-4 text-center col-6">
+                                    <img :src="imageCURL" class="img-fluid" style="height: 100%">
+                                </div>
+                            </div>
+
+                            <div class="my-4 row">
+                                <label class="form-label">d{{')'}}</label>
+                                <input type="file" class="form-control col-6" ref="imageD" @change="changeAnswersImages()"/>
+                                <div class="task-image-wrap my-4 text-center col-6">
+                                    <img :src="imageDURL" class="img-fluid" style="height: 100%">
+                                </div>
+                            </div>
                         </div>
 
                         <div>
@@ -243,7 +352,7 @@ import axios from 'axios';
                             </div>
                         </div>
                                             
-                        <button class="btn btn-primary btn-block mb-4">Добавить задание</button>
+                        <button class="btn btn-primary btn-block mb-4" data-bs-dismiss="modal">Добавить задание</button>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -252,4 +361,49 @@ import axios from 'axios';
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" v-if="currentTask !== undefined">
+                    <vue-mathjax class="mt-4" :formula="currentTask.task_statement"></vue-mathjax>
+                    <div class="task-image-wrap my-4" v-if="currentTask.task_image !== undefined">
+                        <img class="img-fluid" :src="currentTask.task_image" style="height: 100%">
+                    </div>
+
+                    <div class="row my-4 d-flex flex-row align-items-center">
+                        <label class="col-2">a{{')'}}</label>
+                        <vue-mathjax class="col-10" :formula="currentTask.task_body.a"></vue-mathjax>
+                    </div>
+
+                    <div class="row my-4 d-flex flex-row align-items-center">
+                        <label class="col-2">b{{')'}}</label>
+                        <vue-mathjax class="col-10" :formula="currentTask.task_body.b"></vue-mathjax>
+                    </div>
+
+                    <div class="row my-4 d-flex flex-row align-items-center">
+                        <label class="col-2">c{{')'}}</label>
+                        <vue-mathjax class="col-10" :formula="currentTask.task_body.c"></vue-mathjax>
+                    </div>
+
+                    <div class="row my-4 d-flex flex-row align-items-center">
+                        <label class="col-2">d{{')'}}</label>
+                        <vue-mathjax class="col-10" :formula="currentTask.task_body.d"></vue-mathjax>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
+
+<style scoped>
+    .task-image-wrap {
+        width: 120px; 
+        height: 120px; 
+        border-radius: 15px;
+        overflow: hidden;
+    }
+</style>

@@ -64,7 +64,7 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="/profile">Профиль</a></li>
-                        <li><a v-if="userProf.role === 'admin'" class="dropdown-item" href="/admin">Админка</a></li>
+                        <li><a v-if="userProf?.role === 'admin'" class="dropdown-item" href="/admin">Админка</a></li>
                         <li><button @click="logout" class="dropdown-item">Выйти</button></li>
                     </ul>
                 </li>

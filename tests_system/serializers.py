@@ -37,6 +37,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False, required = False)
     profile_logo = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(), read_only = False, required = False)
 
+    def create(self, validated_data):
+        validated_data['total_scores'] = 0
+        return super().create(validated_data)
 
     class Meta:
         model = Profile

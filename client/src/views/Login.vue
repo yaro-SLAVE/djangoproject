@@ -15,6 +15,8 @@ const store = useUserProfileStore();
 async function authenticate() {
   const auth = await store.login(username.value, password.value);
   if (auth) {
+    store.getAuthInfo();
+    store.getUserInfo();
     router.push('/')
   } 
 }

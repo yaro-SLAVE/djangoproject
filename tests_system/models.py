@@ -26,7 +26,6 @@ class Profile(models.Model):
 
 class TopicType(models.Model):
     topic_type_name = models.TextField("Название темы")
-    description = models.TextField("Описание роли")
 
     def __str__(self) -> str:
         return self.topic_type_name
@@ -41,6 +40,7 @@ class TaskAnswersType(models.Model):
 class Task(models.Model):
     task_statement = models.TextField("Условие задания")
     topic_type = models.ForeignKey(TopicType, on_delete=models.CASCADE)
+    task_image = models.ForeignKey(Image, on_delete=models.CASCADE, null=True)
     answers_type = models.ForeignKey(TaskAnswersType, on_delete=models.CASCADE)
     task_body = models.JSONField("Тело теста")
     correct_answer = models.IntegerField("Верный ответ")

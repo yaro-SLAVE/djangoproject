@@ -13,10 +13,15 @@
     } = storeToRefs(userProfileStore);
 
     const logo = ref();
+    const logoURL = ref();
 
     onBeforeMount(async () => {
         
     });
+
+    async function changeLogo() {
+        logoURL.value = URL.createObjectURL(logo.value.files[0]);
+    }
     
     async function updateInfo() {
         const user = (await axios.get("/api/user/user_id/", {
@@ -38,30 +43,37 @@
     }
 
     async function updateLogo() {
-        const formData = new FormData();
+        if (logo.value.files[0] !== undefined) {
+            const formData = new FormData();
         
-        formData.append('image', logo.value.files[0]);
+            formData.append('image', logo.value.files[0]);
 
-        const logoData = await axios.post("/api/image/", formData, {
-            headers: {
-                Authorization: `Bearer ${jwt.value}`
-            }
-        });
+            const logoData = await axios.post("/api/image/", formData, {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                }
+            });
 
-        const user = (await axios.get("/api/profile/profile_id/", {
-            headers: {
-                Authorization: `Bearer ${jwt.value}`
-            }
-        })).data;
+            const user = (await axios.get("/api/profile/profile_id/", {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                }
+            })).data;
 
-        const profLogoData = new FormData();
-        profLogoData.append('profile_logo', logoData.data.id);
+            const profLogoData = new FormData();
+            profLogoData.append('profile_logo', logoData.data.id);
 
-        const prof = await axios.put("/api/profile/" + user.id + "/", profLogoData, {
-            headers: {
-                Authorization: `Bearer ${jwt.value}`
-            }
-        });
+            const prof = await axios.put("/api/profile/" + user.id + "/", profLogoData, {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                }
+            });
+
+            await userProfileStore.getUserInfo();
+
+            logo.value = "";
+            logoURL.value = "";
+        }
     }
 </script>
 
@@ -96,11 +108,16 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form class="d-flex flex-column justify-content-center mb-4" @submit.prevent.stop="updateLogo">
+                    <form class="d-flex flex-column justify-content-center mb-4 text-center" @submit.prevent.stop="updateLogo">
                         <label class="form-label" for="login">Выберите фото профиля</label>
-                        <input type="file" class="form-control" ref="logo" />
+                        
+                        <input type="file" class="form-control" ref="logo" @change="changeLogo()"/>
+
+                        <div class="profile-small-image-wrap-block my-4 text-center">
+                            <img :src="logoURL" class="img-fluid" style="height: 100%">
+                        </div>
                                             
-                        <button class="btn btn-primary btn-block mb-4">Сохранить фото</button>
+                        <button class="btn btn-primary" data-bs-dismiss="modal">Сохранить фото</button>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -149,6 +166,13 @@
     .profile-image-wrap-block {
         width: 300px; 
         height: 300px; 
+        border-radius: 50%;
+        overflow: hidden;
+    }
+
+    .profile-small-image-wrap-block {
+        width: 120px; 
+        height: 120px; 
         border-radius: 50%;
         overflow: hidden;
     }

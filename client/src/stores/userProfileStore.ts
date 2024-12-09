@@ -43,7 +43,6 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
             jwt.value = result.access;
             refresh.value = result.refresh;
 
-            await getAuthInfo();
             return true;
         } catch(error){
             console.error("При авторизации ошибка", error);
@@ -161,9 +160,9 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
         await getUserInfo();
     });
 
-    setInterval(updateTokens, 30000);
+    setInterval(updateTokens, 120000);
 
-    return {userProf, jwt, is_auth, login, logout, getUserInfo, registry};
+    return {userProf, jwt, is_auth, login, logout, getUserInfo, registry, getAuthInfo};
 });
 
 export default useUserProfileStore;
