@@ -4,6 +4,7 @@
     import useUserProfileStore from '@/stores/userProfileStore';
     import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
     import { faBookmark } from '@fortawesome/free-regular-svg-icons';
+import axios from 'axios';
 
     const userStore = useUserProfileStore();
 
@@ -27,24 +28,109 @@
     const testsToShow = ref({});
     const topicTypes = ref({});
 
-    const testTopicType = ref("");
+    const testTopicType = ref();
 
-    const tasksToShow = ref({});
+    const tasksToAddToShow = ref({});
+
+    const tasksToAdd = ref([]);
+
+    const testName = ref("");
 
     onBeforeMount(async () => {
         await fetchAllTests();
+        await fetchTopicTypes();
+        await fetchTasks();
     });
+
+    async function fetchTasks() {
+        tasksToAddToShow.value = (await axios.get("/api/task/?show=all", {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            }
+        })).data;
+    }
+
+    async function fetchTopicTypes() {
+        topicTypes.value = (await axios.get("/api/topic_type/")).data;
+    }
 
     async function fetchAllTests() {
         currentSection.value = "allTests";
+
+        testsToShow.value = (await axios.get("/api/test/?show=all", {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            }
+        })).data;
+
+        const r = (await axios.get("/api/test_task/", {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            }
+        })).data;
+
+        console.log(r);
     }
 
     async function fetchCurrentUserTests() {
         currentSection.value = "currentUserTests";
+
+        testsToShow.value = (await axios.get("/api/test/?show=current_user", {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            }
+        })).data;
+    }
+
+    async function changeTasks(task){
+        if (tasksToAdd.value.includes(task.id)) {
+            const index = tasksToAdd.value.findIndex((item)=>{return (item === task.id)});
+            tasksToAdd.value.splice(index, 1);
+        } else {
+            tasksToAdd.value.push(task.id);
+        }
+    }
+
+    async function changeTopicType() {
+        const length = tasksToAdd.value.length;
+        tasksToAdd.value.splice(0, length);
     }
 
     async function onTestToAdd() {
-        
+        if (tasksToAdd.value.length > 0) {
+            const testData = new FormData();
+
+            testData.append('topic_type', testTopicType.value);
+            testData.append('name', testName.value);
+
+            const test = (await axios.post("/api/test/", testData, {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                },
+            })).data;
+
+            tasksToAdd.value.forEach(async (item) => {
+                const testTaskData = new FormData();
+
+                testTaskData.append('test', test.id);
+                testTaskData.append('task', item);
+
+                await axios.post("/api/test_task/", testTaskData, {
+                    headers: {
+                        Authorization: `Bearer ${jwt.value}`
+                    },
+                })  
+            });
+        }
+
+        await fetchAllTests();
+
+        testName.value = "";
+
+        const length = tasksToAdd.value.length;
+        tasksToAdd.value.splice(0, length);
+
+        testTopicType.value = "";
     }
 </script>
 
@@ -81,16 +167,14 @@
     <div class="mt-5 w-100">
         <div v-for="type in topicTypes">
             <p>
-                <a class="btn btn-primary" data-toggle="collapse" :href="'#' + topicTypes.topic_type_name + 'Collapse'" role="button" aria-expanded="false" :aria-controls="topicTypes.topic_type_name + 'Collapse'">
+                <button class="btn" type="button" data-bs-toggle="collapse" :data-bs-target="'#' + type.id + 'Collapse'" aria-expanded="false" :aria-controls="type.id + 'Collapse'" role="button">
                     {{ type.topic_type_name }}
-                </a>
+                </button>
             </p>
-              <div class="collapse" :id="type.topic_type_name + 'Collapse'">
+              <div class="collapse" :id="type.id + 'Collapse'">
                 <div class="card card-body">
-                    <div v-for="task in testsToShow">
-                        <div>
-                            
-                        </div>
+                    <div v-for="test in testsToShow">
+                        <label>{{test.name}}</label>
                     </div>
                 </div>
               </div>
@@ -107,14 +191,26 @@
                 <div class="modal-body">
                     <form class="d-flex flex-column justify-content-center mb-4" @submit.prevent.stop="onTestToAdd">
 
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <label class="form-label">Название теста</label>
+                            <input type="text" class="form-control" v-model="testName" required />
+                        </div>
+
                         <div class="form-floating mb-4">
-                            <select class="form-select" v-model="testTopicType" required>
+                            <select class="form-select" v-model="testTopicType" @change="changeTopicType()" required>
                                 <option :value="t.id" v-for="t in topicTypes">{{ t.topic_type_name }}</option>
                             </select>
                             <label for="floatingInput">Название темы теста</label>
                         </div>
+
+                        <div class="form-floating mb-4" v-for="task in tasksToAddToShow">
+                            <div class="form-check" v-if="testTopicType !== undefined && task.topic_type === testTopicType">
+                                <vue-mathjax :formula="task.task_statement"></vue-mathjax>
+                                <input class="form-check-input" type="checkbox" @change="changeTasks(task)">
+                            </div>
+                        </div>
                                             
-                        <button class="btn btn-primary btn-block mb-4">Добавить тест</button>
+                        <button class="btn btn-primary btn-block mb-4" data-bs-dismiss="modal">Добавить тест</button>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -124,3 +220,12 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+    .task-image-wrap {
+        width: 120px; 
+        height: 120px; 
+        border-radius: 15px;
+        overflow: hidden;
+    }
+</style>

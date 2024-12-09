@@ -49,6 +49,7 @@ class Task(models.Model):
 class Test(models.Model):
     name = models.TextField("Название теста")
     topic_type = models.ForeignKey(TopicType, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class TestTask(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
@@ -69,7 +70,3 @@ class FinishedTest(models.Model):
 class FinishedTestAnsweredTask(models.Model):
     finished_test = models.ForeignKey(FinishedTest, on_delete=models.CASCADE)
     answered_task = models.ForeignKey(AnsweredTask, on_delete=models.CASCADE)
-
-class TaskImage(models.Model):
-    task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    image = models.ForeignKey(Image, on_delete=models.CASCADE)

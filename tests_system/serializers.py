@@ -72,6 +72,13 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class TestSerializer(serializers.ModelSerializer):
     topic_type = serializers.PrimaryKeyRelatedField(queryset = TopicType.objects.all(), read_only = False)
+    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), read_only = False, required = False)    
+
+    def create(self, validated_data):
+        if 'request' in self.context:
+            validated_data['user'] = self.context['request'].user
+
+        return super().create(validated_data)
 
     class Meta:
         model = Test
@@ -112,12 +119,4 @@ class FinishedTestAnsweredTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FinishedTestAnsweredTask
-        fields = "__all__"
-
-class TaskImageSerializer(serializers.ModelSerializer):
-    task = serializers.PrimaryKeyRelatedField(queryset = Task.objects.all(), read_only = False)
-    image = serializers.PrimaryKeyRelatedField(queryset = Image.objects.all(), read_only = False)
-
-    class Meta:
-        model = Image
         fields = "__all__"

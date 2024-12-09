@@ -148,7 +148,7 @@
 
                         <div data-mdb-input-init class="form-outline mb-4">
                             <label class="form-label">E-mail</label>
-                            <input type="email" class="form-control"  v-model="userProf.email" required/>
+                            <input type="email" class="form-control"  v-model="userProf.email"/>
                         </div>
                                             
                         <button class="btn btn-primary btn-block mb-4">Сохранить изменения</button>

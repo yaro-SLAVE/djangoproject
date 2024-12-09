@@ -42,7 +42,6 @@ router.register("finished_test", FinishedTestViewset, basename="finished_test")
 router.register("finished_test_answered_task", FinishedTestAnsweredTaskViewset, basename="finished_test_answered_task")
 router.register("test_task", TestTaskViewset, basename="test_task")
 router.register("image", ImageViewset, basename = "image")
-router.register("task_image", TaskImageViewset, basename = "task_image")
 router.register("task_answers_type", TaskAnswersTypeViewset, basename = "task_answer_type")
 
 urlpatterns = [

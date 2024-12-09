@@ -21,6 +21,8 @@ from django.core.cache import cache
 
 from django.conf import settings
 
+from django.db.models import Count
+
 class UserViewset(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
@@ -248,9 +250,13 @@ class TaskViewset(
     def get_queryset(self):
         qs = super().get_queryset()
         tasks_show_param = self.request.GET.get('show')
+        topic_type_param = self.request.GET.get('type')
 
         if tasks_show_param == 'current_user':
             qs = qs.filter(user = self.request.user)
+
+        elif topic_type_param != None:
+            qs = qs.filter(topic_type = topic_type_param)
 
         return qs
     
@@ -281,6 +287,15 @@ class TestViewset(
 ):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        tasks_show_param = self.request.GET.get('show')
+
+        if tasks_show_param == 'current_user':
+            qs = qs.filter(user = self.request.user)
+
+        return qs
     
     class StatsSerializer(serializers.Serializer):
         count = serializers.IntegerField()
@@ -337,6 +352,11 @@ class TestTaskViewset(
 ):
     queryset = TestTask.objects.all()
     serializer_class = TestTaskSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        return qs    
     
     class StatsSerializer(serializers.Serializer):
         count = serializers.IntegerField()
@@ -439,13 +459,3 @@ class ImageViewset(
 
         serializer = self.StatsSerializer(isinstance = stats)
         return Response(serializer.data)
-    
-class TaskImageViewset(
-    mixins.CreateModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet
-):
-    queryset = TaskImage.objects.all()
-    serializer_class = TaskImageSerializer
