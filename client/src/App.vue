@@ -41,7 +41,7 @@
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav d-flex flex-row">
+            <ul class="navbar-nav d-flex flex-row align-items-center">
                 <li class="nav-item mx-3" :class="{ 'active': router.currentRoute.value.name === 'Tasks'}">
                     <a class="nav-link" href="/tasks">
                         Задания
@@ -55,12 +55,12 @@
                 </li>
 
                 <li class="nav-item dropdown mx-3">
-                    <a class="nav-link dropdown-toggle form-inline" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle form-inline d-flex flex-row align-items-center" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="navbar-image-wrap-block">
                             <img v-if="userProf?.logo === undefined" src="../default_profile.jpg" class="img-fluid" style="height: 100%">
                             <img v-if="userProf?.logo !== undefined" :src='userProf?.logo' class="img-fluid" style="height: 100%">
                         </div>
-                        <label>{{userProf?.username}}</label>
+                        <label class="mx-3">{{userProf?.username}}</label>
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="/profile">Профиль</a></li>

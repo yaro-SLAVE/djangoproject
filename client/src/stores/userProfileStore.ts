@@ -43,6 +43,8 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
             jwt.value = result.access;
             refresh.value = result.refresh;
 
+            await getAuthInfo();
+
             return true;
         } catch(error){
             console.error("При авторизации ошибка", error);

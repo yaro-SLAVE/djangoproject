@@ -2,8 +2,6 @@
     import { computed, onBeforeMount, ref } from 'vue';
     import { storeToRefs } from 'pinia';
     import useUserProfileStore from '@/stores/userProfileStore';
-    import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-    import { faBookmark } from '@fortawesome/free-regular-svg-icons';
     import axios from 'axios';
 
     const userStore = useUserProfileStore();
@@ -56,11 +54,18 @@
 
     const currentTask = ref();
 
+    const images = ref({});
+
     onBeforeMount(async () => {
         await fetchTopicTypes();
         await fetchTaskAnswersTypes();
         await fetchAllTasks();
+        await fetchImages();
     });
+
+    async function fetchImages() {
+        images.value = (await axios.get("/api/image/")).data;
+    }
 
     async function changeAnswersImages() {
         imageAURL.value = URL.createObjectURL(imageA.value.files[0]);
@@ -110,7 +115,17 @@
         taskData.append('correct_answer', String(correctAnswer.value));
 
         if (taskImage.value.files[0] != undefined) {
-            taskData.append('task_image', taskImage.value.files[0]);
+            const imageForm = new FormData();
+
+            imageForm.append('image', taskImage.value.files[0]);
+
+            const image = (await axios.post("/api/image/", imageForm, {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                }
+            })).data;
+
+            taskData.append('task_image', image.id);
         }
 
         if (answersType.value.type_name === 'text') {
@@ -130,11 +145,45 @@
             answerC.value = "";
             answerD.value = "";
         } else if (answersType.value.type_name === 'image') {
+            const aBody = new FormData();
+            const bBody = new FormData();
+            const cBody = new FormData();
+            const dBody = new FormData();
+
+            aBody.append('image', imageA.value.files[0]);
+            bBody.append('image', imageB.value.files[0]);
+            cBody.append('image', imageC.value.files[0]);
+            dBody.append('image', imageD.value.files[0]);
+
+            const answA = (await axios.post("/api/image/", aBody, {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                }
+            })).data;
+
+            const answB = (await axios.post("/api/image/", bBody, {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                }
+            })).data;
+
+            const answC = (await axios.post("/api/image/", cBody, {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                }
+            })).data;
+
+            const answD = (await axios.post("/api/image/", dBody, {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                }
+            })).data;
+
             const body = {
-                a: String(imageA.value.files[0]),
-                b: String(imageB.value.files[0]),
-                c: String(imageC.value.files[0]),
-                d: String(imageD.value.files[0])
+                a: String(answA.id),
+                b: String(answB.id),
+                c: String(answC.id),
+                d: String(answD.id)
             }
 
             const taskBody = JSON.stringify(body);
@@ -262,25 +311,25 @@
                             <div data-mdb-input-init class="form-outline mb-4">
                                 <label class="form-label" for="form2Example1">a{{')'}}</label>
                                 <input type="text" class="form-control" v-model="answerA" required />
-                                <vue-mathjax :formula="answerA"></vue-mathjax>
+                                <vue-mathjax class="my-5" :formula="answerA"></vue-mathjax>
                             </div>
     
                             <div data-mdb-input-init class="form-outline mb-4">
                                 <label class="form-label" for="form2Example1">b{{')'}}</label>
                                 <input type="text" class="form-control" v-model="answerB" required />
-                                <vue-mathjax :formula="answerB"></vue-mathjax>
+                                <vue-mathjax class="my-5" :formula="answerB"></vue-mathjax>
                             </div>
     
                             <div data-mdb-input-init class="form-outline mb-4">
                                 <label class="form-label" for="form2Example1">c{{')'}}</label>
                                 <input type="text" class="form-control" v-model="answerC" required />
-                                <vue-mathjax :formula="answerC"></vue-mathjax>
+                                <vue-mathjax class="my-5" :formula="answerC"></vue-mathjax>
                             </div>
     
                             <div data-mdb-input-init class="form-outline mb-4">
                                 <label class="form-label" for="form2Example1">d{{')'}}</label>
                                 <input type="text" class="form-control" v-model="answerD" required />
-                                <vue-mathjax :formula="answerD"></vue-mathjax>
+                                <vue-mathjax class="my-5" :formula="answerD"></vue-mathjax>
                             </div>
                         </div>
 

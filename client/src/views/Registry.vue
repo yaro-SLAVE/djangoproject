@@ -6,28 +6,35 @@ import useUserProfileStore from '@/stores/userProfileStore';
   import axios from 'axios';
   import { onBeforeMount, ref } from 'vue';
 
-  const roles = ref();
+  const roles = ref({});
+  const groups = ref({});
 
-  const username = ref("");
-  const password = ref("");
-  const email = ref("");
-  const firstName = ref("");
-  const lastName = ref("");
-  const role = ref(0);
+  const username = ref();
+  const password = ref();
+  const email = ref();
+  const firstName = ref();
+  const lastName = ref();
+  const role = ref();
+  const group = ref()
 
   const userStore = useUserProfileStore();
 
   onBeforeMount(async () => {
     fetchRoles();
+    fetchGroups();
   });
 
   async function fetchRoles() {
-    roles.value = (await axios.get("/api/role")).data;
+    roles.value = (await axios.get("/api/role/")).data;
     
   }
 
+  async function fetchGroups() {
+    groups.value = (await axios.get("/api/group/")).data;
+  }
+
   async function onUserToAdd() {
-    const result = await userStore.registry(username.value, password.value, firstName.value, lastName.value, email.value, role.value);
+    const result = await userStore.registry(username.value, password.value, firstName.value, lastName.value, email.value, role.value.id);
 
     if (result){
       const login = await userStore.login(username.value, password.value);
@@ -73,11 +80,20 @@ import useUserProfileStore from '@/stores/userProfileStore';
       </div>
     </div>
 
-    <div class="form-floating">
-      <select class="form-select" v-model="role" required>
-        <option :value="r.id" v-for="r in roles">{{ r.description }}</option>
-      </select>
-      <label for="floatingInput">Ваша роль</label>
+    <div class="row">
+      <div class="form-floating col-6">
+        <select class="form-select" v-model="role" required>
+          <option :value="r" v-for="r in roles">{{ r.description }}</option>
+        </select>
+        <label for="floatingInput">Ваша роль</label>
+      </div>
+
+      <div class="form-floating col-6" v-if="role?.role === 'student'">
+        <select class="form-select" v-model="group" required>
+          <option :value="g" v-for="g in groups">{{ g.group_name }}</option>
+        </select>
+        <label for="floatingInput">Ваша группа</label>
+      </div>
     </div>
   
     <button class="btn btn-primary btn-block my-4">Sign up</button>

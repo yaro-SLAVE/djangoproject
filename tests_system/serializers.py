@@ -15,6 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(password)
         validated_data['is_active'] = True
         return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        
+
+        return super().update(instance, validated_data)
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import {computed, ref, onBeforeMount, onActivated, onMounted} from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faChartPie, faCreditCard, faGrin }  from '@fortawesome/free-solid-svg-icons'
 import { faGithub, faGooglePay, faGoogle, faYandex, faVk } from '@fortawesome/free-brands-svg-icons'
 import axios from 'axios';
 import useUserProfileStore from '@/stores/userProfileStore';
-import { storeToRefs } from 'pinia';
 import router from "@/router";
 
 const username = ref("");
@@ -17,7 +15,10 @@ async function authenticate() {
   if (auth) {
     store.getAuthInfo();
     store.getUserInfo();
-    router.push('/')
+
+    if (store.is_auth) {
+      router.push('/');
+    }
   } 
 }
 
