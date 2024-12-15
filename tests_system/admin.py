@@ -28,6 +28,10 @@ class TaskAdmin(admin.ModelAdmin):
 class TestAdmin(admin.ModelAdmin):
     list_display = ["id", "topic_type"]
 
+@admin.register(TestTask)
+class TestAdmin(admin.ModelAdmin):
+    list_display = ["id", "task", "test"]
+
 @admin.register(TaskAnswersType)
 class TaskAnswersTypeAdmin(admin.ModelAdmin):
     list_display = ["id", "type_name", "description"] 

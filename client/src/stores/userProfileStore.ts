@@ -67,7 +67,8 @@ const useUserProfileStore = defineStore("UserProfileStore", () => {
             userData.append('first_name', first_name);
             userData.append('last_name', last_name);
 
-            if (email !== "") {
+            console.log(email);
+            if (email !== undefined) {
                 userData.append('email', email);
             }
 

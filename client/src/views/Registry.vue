@@ -96,11 +96,11 @@ import useUserProfileStore from '@/stores/userProfileStore';
       </div>
     </div>
   
-    <button class="btn btn-primary btn-block my-4">Sign up</button>
+    <button class="btn btn-primary btn-block my-4">Зарегистрироваться</button>
 
     <div class="text-center">
-      <p>Have an account? <a href="/login">Sign in</a></p>
-      <p>or sign up with:</p>
+      <p>Уже зарегистрированы? <a href="/login">Войдите</a></p>
+      <p>Или зарегистрируйтесь с помощью:</p>
       <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
         <FontAwesomeIcon :icon="faGithub" />
       </button>

@@ -36,11 +36,11 @@ async function authenticate() {
         <input type="password" class="form-control"  v-model="password" required />
       </div>
     
-      <button class="btn btn-primary btn-block mb-4">Log in</button>
+      <button class="btn btn-primary btn-block mb-4">Ввойти</button>
     
       <div class="text-center">
-        <p>Not a member? <a href="/registration">Register</a></p>
-        <p>or sign up with:</p>
+        <p>Нет аккаунта? <a href="/registration">Зарегистрируйтесь</a></p>
+        <p>Или войдите с помощью:</p>
         <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
           <FontAwesomeIcon :icon="faGithub" />
         </button>

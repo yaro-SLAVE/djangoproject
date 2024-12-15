@@ -3,6 +3,8 @@
     import { storeToRefs } from 'pinia';
     import useUserProfileStore from '@/stores/userProfileStore';
     import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faClosedCaptioning, faPenToSquare, faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 
     const userStore = useUserProfileStore();
 
@@ -214,6 +216,49 @@
     async function updateCurrentTask(task) {
         currentTask.value = task;
     }
+
+    async function deleteTask(taskId: number) {
+        await axios.delete("/api/task/" + taskId + "/", {
+            headers: {
+                    Authorization: `Bearer ${jwt.value}`
+            }
+        });
+
+        await fetchCurrentUserTasks();
+    }
+
+    async function updateTask() {
+        const taskData = new FormData();
+        taskData.append('task_statement', currentTask.value.task_statement);
+        taskData.append('topic_type', currentTask.value.topic_type);
+        taskData.append('answers_type', currentTask.value.answers_type);
+        taskData.append('correct_answer', String(currentTask.value.correct_answer));
+        taskData.append('task_body', JSON.stringify(currentTask.value.task_body));
+
+        if (taskImage.value.files[0] != undefined) {
+            const imageForm = new FormData();
+
+            imageForm.append('image', taskImage.value.files[0]);
+
+            const image = (await axios.post("/api/image/", imageForm, {
+                headers: {
+                    Authorization: `Bearer ${jwt.value}`
+                }
+            })).data;
+
+            taskData.append('task_image', image.id);
+        }
+
+        const result = await axios.put("/api/task/" + currentTask.value.id + "/", taskData, {
+            headers: {
+                Authorization: `Bearer ${jwt.value}`
+            }
+        });
+
+        taskImage.value = "";
+
+        await fetchCurrentUserTasks();
+    }
 </script>
 
 <template>
@@ -256,11 +301,27 @@
               <div class="collapse" :id="type.id + 'Collapse'">
                 <div class="card card-body">
                     <div v-for="task in tasksToShow">
-                        <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#taskModal" v-on:click="updateCurrentTask(task)">
-                            <div v-if="task.topic_type === type.id">
-                                <vue-mathjax :formula="task.task_statement"></vue-mathjax>
+                            <div v-if="task.topic_type === type.id" class="d-flex flex-row row align-items-center justify-content-between">
+                                <button type="button" class="btn col-6 mx-5" data-bs-toggle="modal" data-bs-target="#taskModal" v-on:click="updateCurrentTask(task)">
+                                    <vue-mathjax :formula="task.task_statement"></vue-mathjax>
+                                </button>
+
+                                <div class="col-2" v-if="currentSection === 'currentUserTasks'">
+                                    <button type="button" class="btn btn-primary mx-2" data-bs-toggle="modal" data-bs-target="#updateTaskModal" v-on:click="updateCurrentTask(task)">
+                                        <FontAwesomeIcon :icon="faPenToSquare"></FontAwesomeIcon>
+                                    </button>
+    
+                                    <button type="button" class="btn btn-danger" v-on:click="deleteTask(task.id)">
+                                        <FontAwesomeIcon :icon="faTrashAlt"></FontAwesomeIcon>
+                                    </button>
+                                </div>
+
+                                <button type="button" class="btn btn-danger mx-2 col-1" v-on:click="deleteTask(task)" v-if="userProf?.role === 'admin'">
+                                    <FontAwesomeIcon :icon="faTrashAlt"></FontAwesomeIcon>
+                                </button>
+
+                                <hr class="my-5 mx-5 w-75">
                             </div>
-                        </button>
                     </div>
                 </div>
               </div>
@@ -442,6 +503,110 @@
                         <label class="col-2">d{{')'}}</label>
                         <vue-mathjax class="col-10" :formula="currentTask.task_body.d"></vue-mathjax>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="updateTaskModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="Label">Изменение задания</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" v-if="currentTask !== undefined">
+                    <form class="d-flex flex-column justify-content-center mb-4" @submit.prevent.stop="updateTask">
+
+                        <div class="row">
+                            <div class="form-floating mb-4 col-6">
+                                <select class="form-select" v-model="currentTask.topic_type" required>
+                                    <option :value="t.id" v-for="t in topicTypes">{{ t.topic_type_name }}</option>
+                                </select>
+                                <label for="floatingInput">Название темы задания</label>
+                            </div>
+                        </div>
+
+                        <div data-mdb-input-init class="form-outline mb-4">                        
+                          <label class="form-label" for="login">Условие задания</label>
+                          <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" v-model="currentTask.task_statement" required></textarea>
+                          <vue-mathjax :formula="currentTask.task_statement"></vue-mathjax>
+                        </div>
+
+                        <div data-mdb-input-init class="form-outline mb-4">                        
+                            <label class="form-label" for="login">Изображение к заданию</label>
+                            <input type="file" class="form-control col-6" ref="taskImage" @change="changeTaskImage()"/>
+                            <div class="task-image-wrap my-4 text-center col-6">
+                                <img :src="currentTask.task_image" class="img-fluid" style="height: 100%">
+                            </div>
+                        </div>
+
+                        <div>
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <label class="form-label" for="form2Example1">a{{')'}}</label>
+                                <input type="text" class="form-control" v-model="currentTask.task_body.a" required />
+                                <vue-mathjax class="my-5" :formula="currentTask.task_body.a"></vue-mathjax>
+                            </div>
+    
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <label class="form-label" for="form2Example1">b{{')'}}</label>
+                                <input type="text" class="form-control" v-model="currentTask.task_body.b" required />
+                                <vue-mathjax class="my-5" :formula="currentTask.task_body.b"></vue-mathjax>
+                            </div>
+    
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <label class="form-label" for="form2Example1">c{{')'}}</label>
+                                <input type="text" class="form-control" v-model="currentTask.task_body.c" required />
+                                <vue-mathjax class="my-5" :formula="currentTask.task_body.c"></vue-mathjax>
+                            </div>
+    
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <label class="form-label" for="form2Example1">d{{')'}}</label>
+                                <input type="text" class="form-control" v-model="currentTask.task_body.d" required />
+                                <vue-mathjax class="my-5" :formula="currentTask.task_body.d"></vue-mathjax>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label>Выберите верный ответ</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerA" v-model="currentTask.correct_answer" :value="0">
+                                        <label class="form-check-label" for="answerA">
+                                            a
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerB" v-model="currentTask.correct_answer" :value="1">
+                                        <label class="form-check-label" for="answerB">
+                                            b
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerC" v-model="currentTask.correct_answer" :value="2">
+                                        <label class="form-check-label" for="answerC">
+                                            c
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="answerD" v-model="currentTask.correct_answer" :value="3">
+                                        <label class="form-check-label" for="answerD">
+                                            d
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                            
+                        <button class="btn btn-primary btn-block mb-4" data-bs-dismiss="modal">Изменить задание</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                 </div>
             </div>
         </div>

@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from django.db.models import Avg, Min, Max, Count
 
 from rest_framework.response import Response
+from django.http import HttpResponse
 
 from django.contrib.auth import authenticate, login
 from rest_framework.permissions import IsAuthenticated
@@ -77,7 +78,7 @@ class ProfileViewset(
             "total_scores": profile.total_scores
         }
 
-        if (profile.role == 'student'):
+        if (profile.role.role == 'student'):
             user_info.update({
                 "group": profile.group.group_name
             })
@@ -242,6 +243,7 @@ class TaskViewset(
     mixins.UpdateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
     GenericViewSet
 ):
     queryset = Task.objects.all()
@@ -283,6 +285,7 @@ class TestViewset(
     mixins.UpdateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
     GenericViewSet
 ):
     queryset = Test.objects.all()
@@ -294,7 +297,7 @@ class TestViewset(
 
         if tasks_show_param == 'current_user':
             qs = qs.filter(user = self.request.user)
-
+        
         return qs
     
     class StatsSerializer(serializers.Serializer):
@@ -353,10 +356,15 @@ class TestTaskViewset(
     queryset = TestTask.objects.all()
     serializer_class = TestTaskSerializer
 
-    def get_queryset(self):
-        qs = super().get_queryset()
+    class Tests(serializers.Serializer):
+        count = serializers.IntegerField()
+        name = serializers.CharField()
+        topic_type = serializers.CharField()
 
-        return qs    
+    def get_queryset(self):
+        qs = super().get_queryset()  
+
+        return qs
     
     class StatsSerializer(serializers.Serializer):
         count = serializers.IntegerField()

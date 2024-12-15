@@ -3,7 +3,7 @@
     import { storeToRefs } from 'pinia';
     import useUserProfileStore from '@/stores/userProfileStore';
     import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-    import { faBookmark } from '@fortawesome/free-regular-svg-icons';
+    import { faBookmark, faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 import axios from 'axios';
 
     const userStore = useUserProfileStore();
@@ -62,14 +62,6 @@ import axios from 'axios';
                 Authorization: `Bearer ${jwt.value}`
             }
         })).data;
-
-        const r = (await axios.get("/api/test_task/", {
-            headers: {
-                Authorization: `Bearer ${jwt.value}`
-            }
-        })).data;
-
-        console.log(r);
     }
 
     async function fetchCurrentUserTests() {
@@ -132,6 +124,16 @@ import axios from 'axios';
 
         testTopicType.value = "";
     }
+
+    async function deleteTest(id: number) {
+        await axios.delete("/api/test/" + id + "/", {
+            headers: {
+                    Authorization: `Bearer ${jwt.value}`
+            }
+        });
+
+        await fetchCurrentUserTests();
+    }
 </script>
 
 <template>
@@ -174,7 +176,17 @@ import axios from 'axios';
               <div class="collapse" :id="type.id + 'Collapse'">
                 <div class="card card-body">
                     <div v-for="test in testsToShow">
-                        <label>{{test.name}}</label>
+                        <div v-if="test.topic_type === type.id" class="d-flex flex-row row align-items-center justify-content-between">
+                            <label class="col-6 mx-5">{{test.name}}</label>
+
+                            <div class="col-2" v-if="currentSection === 'currentUserTests' || userProf?.role === 'admin'">
+                                <button type="button" class="btn btn-danger" v-on:click="deleteTest(test.id)">
+                                    <FontAwesomeIcon :icon="faTrashAlt"></FontAwesomeIcon>
+                                </button>
+                            </div>
+
+                            <hr class="my-5 mx-5 w-75">
+                        </div>                        
                     </div>
                 </div>
               </div>
